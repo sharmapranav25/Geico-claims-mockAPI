@@ -1,0 +1,59 @@
+
+GET http://127.0.0.1:8000/policies
+HTTP 200
+[{"policy_number": "GEC-0001", "name": "Avery Morgan"}, {"policy_number": "GEC-0002", "name": "Blair Chen"}, {"policy_number": "GEC-0003", "name": "Casey Rivera"}, {"policy_number": "GEC-0004", "name": "Devon Patel"}, {"policy_number": "GEC-0005", "name": "Emery Brooks"}, {"policy_number": "GEC-0006", "name": "Finley Kim"}, {"policy_number": "GEC-0007", "name": "Harper Singh"}, {"policy_number": "GEC-0008", "name": "Jordan Ellis"}, {"policy_number": "GEC-0009", "name": "Kai Bennett"}, {"policy_number": "GEC-0010", "name": "Logan Reed"}, {"policy_number": "GEC-0011", "name": "Morgan Hayes"}, {"policy_number": "GEC-0012", "name": "Parker Diaz"}, {"policy_number": "GEC-0013", "name": "Quinn Foster"}, {"policy_number": "GEC-0014", "name": "Riley Nguyen"}, {"policy_number": "GEC-0015", "name": "Sage Turner"}]
+
+GET http://127.0.0.1:8000/policies/GEC-0001
+HTTP 200
+{"policy_number": "GEC-0001", "name": "Avery Morgan", "phone": "628-268-8763", "vehicles": [{"vehicle_id": "V01-1", "year": 2021, "make": "Toyota", "model": "Camry"}], "drivers": [{"driver_id": "D01-1", "name": "Avery Morgan", "relationship": "policyholder"}], "beneficiaries": [{"name": "Avery Morgan Beneficiary 1", "relationship": "family member"}, {"name": "Avery Morgan Beneficiary 2", "relationship": "family member"}, {"name": "Avery Morgan Beneficiary 3", "relationship": "family member"}], "claims": [{"draft_id": "seed-draft-0001", "policy_number": "GEC-0001", "status": "submitted", "loss": {"occurred_at": "2026-10-20T14:30:00-07:00", "location": "Mock parking lot", "description": "Test vehicle damage while parked.", "vehicle_id": "V01-1", "other_party": {"policy_number": "GEC-0007"}}, "claim_number": "CLM-SEED-0001", "submitted_at": "2026-10-21T12:00:00+00:00"}], "open_draft": null, "claims_against": []}
+
+GET http://127.0.0.1:8000/policies/GEC-0004
+HTTP 200
+{"policy_number": "GEC-0004", "name": "Devon Patel", "phone": "628-268-8763", "vehicles": [{"vehicle_id": "V04-1", "year": 2021, "make": "Toyota", "model": "Camry"}, {"vehicle_id": "V04-2", "year": 2022, "make": "Honda", "model": "Civic"}], "drivers": [{"driver_id": "D04-1", "name": "Devon Patel", "relationship": "policyholder"}], "beneficiaries": [{"name": "Devon Patel Beneficiary 1", "relationship": "family member"}, {"name": "Devon Patel Beneficiary 2", "relationship": "family member"}], "claims": [], "open_draft": {"draft_id": "seed-draft-0004", "policy_number": "GEC-0004", "status": "draft", "loss": {"occurred_at": "2026-10-20T14:30:00-07:00", "location": "Mock parking lot", "description": "Test vehicle damage while parked.", "vehicle_id": "V04-1", "other_party": null}}, "claims_against": []}
+
+GET http://127.0.0.1:8000/policies/GEC-0007
+HTTP 200
+{"policy_number": "GEC-0007", "name": "Harper Singh", "phone": "628-268-8763", "vehicles": [{"vehicle_id": "V07-1", "year": 2021, "make": "Toyota", "model": "Camry"}, {"vehicle_id": "V07-2", "year": 2022, "make": "Honda", "model": "Civic"}, {"vehicle_id": "V07-3", "year": 2023, "make": "Honda", "model": "Civic"}], "drivers": [{"driver_id": "D07-1", "name": "Harper Singh", "relationship": "policyholder"}], "beneficiaries": [], "claims": [], "open_draft": null, "claims_against": [{"claim_number": "CLM-SEED-0001", "filed_under_policy": "GEC-0001", "status": "submitted"}]}
+
+GET http://127.0.0.1:8000/policies/GEC-0015
+HTTP 200
+{"policy_number": "GEC-0015", "name": "Sage Turner", "phone": "628-268-8763", "vehicles": [{"vehicle_id": "V15-1", "year": 2021, "make": "Toyota", "model": "Camry"}], "drivers": [{"driver_id": "D15-1", "name": "Sage Turner", "relationship": "policyholder"}], "beneficiaries": [], "claims": [], "open_draft": null, "claims_against": []}
+
+GET http://127.0.0.1:8000/policies/UNKNOWN
+HTTP 404
+{"detail": "Policy not found"}
+
+POST http://127.0.0.1:8000/policies/GEC-0015/claims/draft/submit
+HTTP 400
+{"detail": "No open draft to submit"}
+
+POST http://127.0.0.1:8000/policies/GEC-0015/claims/draft
+Request: {"description": "Test scrape while parked."}
+HTTP 201
+{"draft_id": "draft-2fa94fd7a25a4fa6b745057afb1efdef", "policy_number": "GEC-0015", "status": "draft", "loss": {"occurred_at": null, "location": null, "description": "Test scrape while parked.", "vehicle_id": null, "other_party": null}}
+
+POST http://127.0.0.1:8000/policies/GEC-0015/claims/draft/submit
+HTTP 400
+{"detail": {"message": "Draft is incomplete", "missing_fields": ["occurred_at", "location", "vehicle_id"]}}
+
+POST http://127.0.0.1:8000/policies/GEC-0015/claims/draft
+Request: {"occurred_at": "2026-10-31T10:00:00-07:00", "location": "Test parking lot", "vehicle_id": "V15-1", "other_party": {"policy_number": "GEC-0014"}}
+HTTP 200
+{"draft_id": "draft-2fa94fd7a25a4fa6b745057afb1efdef", "policy_number": "GEC-0015", "status": "draft", "loss": {"occurred_at": "2026-10-31T10:00:00-07:00", "location": "Test parking lot", "description": "Test scrape while parked.", "vehicle_id": "V15-1", "other_party": {"policy_number": "GEC-0014"}}}
+
+POST http://127.0.0.1:8000/policies/GEC-0015/claims/draft/submit
+HTTP 201
+{"draft_id": "draft-2fa94fd7a25a4fa6b745057afb1efdef", "policy_number": "GEC-0015", "status": "submitted", "loss": {"occurred_at": "2026-10-31T10:00:00-07:00", "location": "Test parking lot", "description": "Test scrape while parked.", "vehicle_id": "V15-1", "other_party": {"policy_number": "GEC-0014"}}, "claim_number": "CLM-FAF00C0EE6B4496DAFDE390DD75B5C64", "submitted_at": "2026-11-01T20:53:42.201661+00:00"}
+
+POST http://127.0.0.1:8000/policies/GEC-0015/claims/draft/submit
+HTTP 400
+{"detail": "No open draft to submit"}
+
+POST http://127.0.0.1:8000/policies/GEC-0015/claims/draft
+Request: {"name": "Cannot change identity"}
+HTTP 422
+{"detail": [{"type": "extra_forbidden", "loc": ["body", "name"], "msg": "Extra inputs are not permitted", "input": "Cannot change identity"}]}
+
+GET http://127.0.0.1:8000/policies/GEC-0014
+HTTP 200
+{"policy_number": "GEC-0014", "name": "Riley Nguyen", "phone": "628-268-8763", "vehicles": [{"vehicle_id": "V14-1", "year": 2021, "make": "Toyota", "model": "Camry"}], "drivers": [{"driver_id": "D14-1", "name": "Riley Nguyen", "relationship": "policyholder"}], "beneficiaries": [], "claims": [], "open_draft": null, "claims_against": [{"claim_number": "CLM-FAF00C0EE6B4496DAFDE390DD75B5C64", "filed_under_policy": "GEC-0015", "status": "submitted"}]}
