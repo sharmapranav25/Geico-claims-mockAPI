@@ -3,12 +3,14 @@
 from contextlib import asynccontextmanager
 from copy import deepcopy
 from datetime import datetime, timezone
+from pathlib import Path
 from threading import Lock
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException, Response
-from pydantic import BaseModel, ConfigDict, StringConstraints, AwareDatetime
+from fastapi.responses import HTMLResponse
+from pydantic import BaseModel, ConfigDict, StringConstraints, AwareDatetime, Field, StrictBool
 
 from seed import make_seed
 
@@ -19,17 +21,47 @@ class OtherParty(BaseModel):
     model_config = ConfigDict(extra="forbid")
     policy_number: Text | None = None
     name: Text | None = None
+    phone: Text | None = None
     insurer: Text | None = None
-    description: Text | None = None
+    vehicle_description: Text | None = None
+
+
+class RepresentedPerson(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    name: Text | None = None
+    relationship: Text | None = None
+
+
+class PoliceReport(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    filed: StrictBool | None = None
+    report_number: Text | None = None
+    department: Text | None = None
+
+
+class Witness(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    name: Text | None = None
+    phone: Text | None = None
 
 
 class DraftUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid")
+    reporting_intent: Literal["A", "B"] | None = None
+    caller_role: Literal["policyholder", "representative", "affected_person"] | None = None
+    represented_person: RepresentedPerson | None = None
+    caller_name: Text | None = None
+    caller_phone: Text | None = None
     occurred_at: AwareDatetime | None = None
+    discovered_at: AwareDatetime | None = None
     location: Text | None = None
     description: Text | None = None
     vehicle_id: Text | None = None
+    loss_type: Literal["collision", "theft", "weather", "other"] | None = None
     other_party: OtherParty | None = None
+    police_report: PoliceReport | None = None
+    witnesses: list[Witness] = Field(default_factory=list)
+    evidence_link_sent: StrictBool = False
 
 
 def create_app():
@@ -40,6 +72,10 @@ def create_app():
         yield
 
     application = FastAPI(title="Mock GEICO Policy and Claims API", version="1.0.0", lifespan=lifespan)
+
+    @application.get("/", response_class=HTMLResponse)
+    def policy_browser():
+        return Path(__file__).with_name("index.html").read_text(encoding="utf-8")
 
     def policy_or_404(number):
         policy = application.state.policies.get(number)

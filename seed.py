@@ -39,10 +39,36 @@ def make_seed():
                 "draft_id": f"seed-draft-{i:04d}", "policy_number": number,
                 "status": "submitted" if i <= 3 else "draft",
                 "loss": {
-                    "occurred_at": "2026-10-20T14:30:00-07:00", "location": "Mock parking lot",
-                    "description": "Test vehicle damage while parked.",
+                    "reporting_intent": "B" if i == 2 else "A",
+                    "caller_role": "representative" if i == 4 else "affected_person" if i == 2 else "policyholder",
+                    "represented_person": {"name": name, "relationship": "parent"} if i == 4 else None,
+                    "caller_name": "Taylor Patel" if i == 4 else name,
+                    "caller_phone": "628-268-8763",
+                    "occurred_at": "2026-10-20T14:30:00-07:00",
+                    "discovered_at": "2026-10-20T17:00:00-07:00" if i == 4 else None,
+                    "location": "Mock parking lot",
+                    "loss_type": ("collision", "collision", "weather", "theft", "other", "weather")[i - 1],
+                    "description": (
+                        "Another vehicle scraped the parked car.",
+                        "A vehicle insured under the other policy struck my parked car.",
+                        "Hail dented the parked car.",
+                        "Reporting for my parent: their parked car was stolen.",
+                        "A shopping cart scratched the parked car.",
+                        "A storm-damaged branch fell onto the parked car.",
+                    )[i - 1],
                     "vehicle_id": vehicles[0]["vehicle_id"],
-                    "other_party": {"policy_number": f"GEC-{i + 6:04d}"} if i <= 2 else None,
+                    "other_party": {
+                        "policy_number": f"GEC-{i + 6:04d}", "name": NAMES[i + 5],
+                        "phone": "628-268-8763", "insurer": "GEICO",
+                        "vehicle_description": "2021 Toyota Camry",
+                    } if i <= 2 else None,
+                    "police_report": {
+                        "filed": True, "report_number": f"MOCK-REPORT-{i:04d}",
+                        "department": "Mock City Police",
+                    } if i in (1, 4) else {"filed": False} if i == 2 else None,
+                    "witnesses": [{"name": "Alex Sample", "phone": "628-268-8763"}] if i == 1 else [],
+                    # A recorded mock flag only; no message is actually sent.
+                    "evidence_link_sent": i == 2,
                 },
             }
             if i <= 3:

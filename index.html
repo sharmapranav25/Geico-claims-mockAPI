@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mock GEICO policy browser</title>
+  <style>
+    body { font: 16px/1.5 system-ui, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+    select { font: inherit; max-width: 100%; padding: .4rem; }
+    section { border-top: 1px solid #ccc; margin-top: 1.5rem; }
+    dt { font-weight: bold; } dd { margin: 0 0 .6rem 1rem; overflow-wrap: anywhere; }
+    li { margin-bottom: 1rem; } h2 { font-size: 1.2rem; }
+  </style>
+</head>
+<body>
+  <h1>Mock GEICO policy browser</h1>
+  <p>Read-only test data. Select a policy to view its profile and claim activity.</p>
+  <label for="policy">Policy</label>
+  <select id="policy" disabled><option value="">Select a policy</option></select>
+  <p id="status" role="status" aria-live="polite">Loading policies…</p>
+  <main id="details" aria-label="Policy details"></main>
+  <noscript>Enable JavaScript to load policies and view their details.</noscript>
+  <script>
+    const select = document.getElementById('policy');
+    const status = document.getElementById('status');
+    const details = document.getElementById('details');
+    let selectionVersion = 0;
+
+    async function getJSON(url) {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`Request failed (HTTP ${response.status}).`);
+      return response.json();
+    }
+
+    function element(tag, text) {
+      const node = document.createElement(tag);
+      if (text !== undefined) node.textContent = text;
+      return node;
+    }
+
+    function render(value) {
+      if (value === null || value === undefined) return element('p', 'None');
+      if (Array.isArray(value)) {
+        if (!value.length) return element('p', 'None');
+        const list = element('ul');
+        value.forEach(item => { const row = element('li'); row.append(render(item)); list.append(row); });
+        return list;
+      }
+      if (typeof value === 'object') {
+        const list = element('dl');
+        Object.entries(value).forEach(([key, item]) => {
+          const label = key.replaceAll('_', ' ');
+          const description = element('dd');
+          description.append(render(item));
+          list.append(element('dt', label.charAt(0).toUpperCase() + label.slice(1)), description);
+        });
+        return list;
+      }
+      return element('span', String(value));
+    }
+
+    select.addEventListener('change', async () => {
+      const version = ++selectionVersion;
+      details.replaceChildren();
+      if (!select.value) { status.textContent = 'Select a policy.'; return; }
+      status.textContent = 'Loading policy…';
+      try {
+        const policy = await getJSON(`/policies/${encodeURIComponent(select.value)}`);
+        if (version !== selectionVersion) return;
+        const sections = [
+          ['Profile', { policy_number: policy.policy_number, name: policy.name, phone: policy.phone }],
+          ['Vehicles', policy.vehicles], ['Drivers', policy.drivers],
+          ['Beneficiaries', policy.beneficiaries], ['Submitted claims', policy.claims],
+          ['Open draft', policy.open_draft], ['Claims against this policy', policy.claims_against]
+        ];
+        sections.forEach(([title, value]) => {
+          const section = element('section');
+          section.append(element('h2', title), render(value));
+          details.append(section);
+        });
+        status.textContent = `Showing ${policy.policy_number} — ${policy.name}.`;
+      } catch (error) {
+        if (version === selectionVersion) status.textContent = `Unable to load policy. ${error.message}`;
+      }
+    });
+
+    (async () => {
+      try {
+        const policies = await getJSON('/policies');
+        policies.forEach(policy => {
+          const option = element('option', `${policy.policy_number} — ${policy.name}`);
+          option.value = policy.policy_number;
+          select.append(option);
+        });
+        select.disabled = policies.length === 0;
+        status.textContent = policies.length ? 'Select a policy.' : 'No policies available.';
+      } catch (error) {
+        status.textContent = `Unable to load policies. ${error.message} Reload to retry.`;
+      }
+    })();
+  </script>
+</body>
+</html>

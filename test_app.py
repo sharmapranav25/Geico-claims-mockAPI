@@ -109,3 +109,87 @@ def test_new_app_resets_state(client):
     client.post('/policies/GEC-0004/claims/draft/submit')
     with TestClient(create_app()) as fresh:
         assert fresh.get('/policies/GEC-0004').json()['open_draft'] is not None
+
+
+def test_expanded_template_round_trip_and_profile_unchanged(client):
+    base = '/policies/GEC-0015'
+    before = client.get(base).json()
+    payload = {
+        'reporting_intent': 'A', 'caller_role': 'representative',
+        'represented_person': {'name': 'Sage Turner', 'relationship': 'parent'},
+        'caller_name': 'Jamie Turner', 'caller_phone': '628-268-8763',
+        'occurred_at': '2026-10-31T10:00:00-07:00',
+        'discovered_at': '2026-10-31T11:00:00-07:00',
+        'location': 'Test lot', 'description': 'A vehicle scraped the parked car.',
+        'vehicle_id': 'V15-1', 'loss_type': 'collision',
+        'other_party': {'name': 'Riley Nguyen', 'phone': '628-268-8763',
+                        'insurer': 'GEICO', 'policy_number': 'GEC-0014',
+                        'vehicle_description': '2021 Toyota Camry'},
+        'police_report': {'filed': True, 'report_number': 'MOCK-123', 'department': 'Mock Police'},
+        'witnesses': [{'name': 'Alex Sample', 'phone': '628-268-8763'}],
+        'evidence_link_sent': True,
+    }
+    response = client.post(base + '/claims/draft', json=payload)
+    assert response.status_code == 201
+    assert response.json()['loss'] == payload
+    assert client.get(base).json()['open_draft']['loss'] == payload
+    changed = client.post(base + '/claims/draft', json={'description': 'Updated account.'})
+    payload['description'] = 'Updated account.'
+    assert changed.status_code == 200 and changed.json()['loss'] == payload
+    submitted = client.post(base + '/claims/draft/submit')
+    assert submitted.status_code == 201 and submitted.json()['loss'] == payload
+    after = client.get(base).json()
+    assert after['claims'][0]['loss'] == payload
+    for field in ('policy_number', 'name', 'phone', 'vehicles', 'drivers', 'beneficiaries'):
+        assert after[field] == before[field]
+
+
+@pytest.mark.parametrize('payload', [
+    {'reporting_intent': 'C'}, {'caller_role': 'owner'}, {'loss_type': 'fire'},
+    {'represented_person': {'policy_number': 'GEC-0001'}},
+    {'police_report': {'unknown': True}}, {'witnesses': [{'unknown': 'value'}]},
+    {'other_party': {'description': 'Old field is no longer supported'}},
+    {'discovered_at': 'not-a-date'}, {'discovered_at': '2026-10-31T10:00:00'},
+    {'police_report': {'filed': 'yes'}}, {'evidence_link_sent': 'true'},
+    {'witnesses': None}, {'evidence_link_sent': None},
+])
+def test_expanded_template_rejects_invalid_fields(client, payload):
+    before = client.get('/policies/GEC-0004').json()
+    assert client.post('/policies/GEC-0004/claims/draft', json=payload).status_code == 422
+    assert client.get('/policies/GEC-0004').json() == before
+
+
+def test_new_defaults_and_partial_object_replacement(client):
+    path = '/policies/GEC-0015/claims/draft'
+    loss = client.post(path, json={}).json()['loss']
+    assert loss['witnesses'] == [] and loss['evidence_link_sent'] is False
+    assert loss['reporting_intent'] is None and loss['police_report'] is None
+    client.post(path, json={
+        'police_report': {'filed': True, 'department': 'Mock Police'},
+        'represented_person': {'name': 'Sage Turner'},
+        'witnesses': [{'name': 'Alex Sample'}], 'evidence_link_sent': True,
+    })
+    loss = client.post(path, json={'police_report': {'filed': False}}).json()['loss']
+    assert loss['police_report'] == {'filed': False}
+    assert loss['witnesses'] == [{'name': 'Alex Sample'}]
+    assert loss['evidence_link_sent'] is True
+    loss = client.post(path, json={
+        'police_report': None, 'represented_person': None,
+        'witnesses': [], 'evidence_link_sent': False,
+    }).json()['loss']
+    assert loss['police_report'] is None and loss['represented_person'] is None
+    assert loss['witnesses'] == [] and loss['evidence_link_sent'] is False
+    assert client.post('/policies/GEC-0013/claims/draft', json={}).json()['loss']['witnesses'] == []
+
+
+def test_seed_claims_match_expanded_template():
+    from app import DraftUpdate
+
+    _, drafts, claims = make_seed()
+    losses = [record['loss'] for record in [*drafts.values(), *claims.values()]]
+    for loss in losses:
+        DraftUpdate.model_validate(loss)
+        assert set(loss) == set(DraftUpdate.model_fields)
+    assert {loss['reporting_intent'] for loss in losses} == {'A', 'B'}
+    assert {loss['caller_role'] for loss in losses} == {'policyholder', 'representative', 'affected_person'}
+    assert {loss['loss_type'] for loss in losses} == {'collision', 'theft', 'weather', 'other'}
