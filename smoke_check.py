@@ -26,17 +26,17 @@ def request(method, path, expected, body=None):
 
 if __name__ == '__main__':
     request('GET', '/policies', 200)
-    for number in ('GEC-0001', 'GEC-0004', 'GEC-0007', 'GEC-0015', 'UNKNOWN'):
+    for number in ('1001', '1004', '1007', '1015', 'UNKNOWN'):
         request('GET', '/policies/' + number, 404 if number == 'UNKNOWN' else 200)
-    path = '/policies/GEC-0015/claims/draft'
+    path = '/policies/1015/claims/draft'
     request('POST', path + '/submit', 400)
     request('POST', path, 201, {'description': 'Test scrape while parked.'})
     request('POST', path + '/submit', 400)
     request('POST', path, 200, {
         'occurred_at': '2026-10-31T10:00:00-07:00', 'location': 'Test parking lot',
-        'vehicle_id': 'V15-1', 'other_party': {'policy_number': 'GEC-0014'},
+        'vehicle_id': 'V15-1', 'other_party': {'policy_number': '1014'},
     })
     request('POST', path + '/submit', 201)
     request('POST', path + '/submit', 400)
     request('POST', path, 422, {'name': 'Cannot change identity'})
-    request('GET', '/policies/GEC-0014', 200)
+    request('GET', '/policies/1014', 200)
