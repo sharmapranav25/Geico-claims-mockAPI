@@ -21,6 +21,8 @@ Interactive API docs: http://127.0.0.1:8000/docs (also `/redoc`); machine-readab
 
 | Method | Path | Success |
 | --- | --- | --- |
+| GET | `/availability` | 200; representative availability (false in this demo) |
+| POST | `/callbacks` | 201; callback time, phone, session ID and generated callback ID; no policy required |
 | GET | `/policies` | 200; all policy numbers and names |
 | GET | `/policies/{policy_number}` | 200; full profile, submitted `claims`, `open_draft` or null, `claims_against` |
 | GET | `/policies/{policy_number}/claims/by-reference/{reference}` | 200 with the submitted claim; 404 if the policy or submission reference is not found |

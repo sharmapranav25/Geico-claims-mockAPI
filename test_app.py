@@ -265,3 +265,27 @@ def test_claim_by_reference_missing(client):
     result = client.get('/policies/UNKNOWN/claims/by-reference/missing')
     assert result.status_code == 404
     assert result.json() == {'detail': 'Policy not found'}
+
+
+def test_availability(client):
+    response = client.get('/availability')
+    assert response.status_code == 200
+    assert response.json() == {'representatives_available': False}
+
+
+def test_callback_saved_without_policy(client):
+    payload = {'callback_time': '2026-11-10T10:00:00-08:00',
+               'callback_phone': '628-268-8753', 'session_id': 'callback-session'}
+    response = client.post('/callbacks', json=payload)
+    assert response.status_code == 201
+    record = response.json()
+    assert record['callback_id'].startswith('callback-')
+    assert {key: record[key] for key in payload} == payload
+    assert client.app.state.callbacks[record['callback_id']] == record
+
+
+def test_callback_rejects_unknown_field(client):
+    response = client.post('/callbacks', json={'callback_time': '2026-11-10T10:00:00-08:00',
+        'callback_phone': '628-268-8753', 'session_id': 'callback-session', 'policy_number': '1001'})
+    assert response.status_code == 422
+    assert client.app.state.callbacks == {}

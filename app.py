@@ -69,11 +69,19 @@ class SubmitRequest(BaseModel):
     submission_reference: Text
 
 
+class CallbackRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    callback_time: AwareDatetime
+    callback_phone: Text
+    session_id: Text
+
+
 def create_app():
     @asynccontextmanager
     async def lifespan(application):
         application.state.policies, application.state.drafts, application.state.claims = make_seed()
         application.state.references = {}
+        application.state.callbacks = {}
         application.state.lock = Lock()
         yield
 
@@ -169,6 +177,18 @@ def create_app():
             if claim_number is None:
                 raise HTTPException(404, detail="Submission not found")
             return deepcopy(application.state.claims[claim_number])
+
+    @application.get("/availability")
+    def get_availability():
+        return {"representatives_available": False}
+
+    @application.post("/callbacks", status_code=201)
+    def save_callback(request: CallbackRequest):
+        with application.state.lock:
+            record = request.model_dump(mode="json")
+            record['callback_id'] = f'callback-{uuid4().hex}'
+            application.state.callbacks[record['callback_id']] = record
+            return deepcopy(record)
 
     return application
 
