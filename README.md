@@ -23,6 +23,7 @@ Interactive API docs: http://127.0.0.1:8000/docs (also `/redoc`); machine-readab
 | --- | --- | --- |
 | GET | `/policies` | 200; all policy numbers and names |
 | GET | `/policies/{policy_number}` | 200; full profile, submitted `claims`, `open_draft` or null, `claims_against` |
+| GET | `/policies/{policy_number}/claims/by-reference/{reference}` | 200 with the submitted claim; 404 if the policy or submission reference is not found |
 | POST | `/policies/{policy_number}/claims/draft` | 201 when created; 200 when updating the current draft |
 | POST | `/policies/{policy_number}/claims/draft/submit` | Optional `submission_reference` body; 201 for a new claim, 200 with the same claim on reference replay for that policy, even after draft deletion |
 

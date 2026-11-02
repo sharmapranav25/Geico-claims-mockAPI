@@ -161,6 +161,15 @@ def create_app():
             del application.state.drafts[policy_number]
             return deepcopy(claim)
 
+    @application.get("/policies/{policy_number}/claims/by-reference/{reference}")
+    def get_claim_by_reference(policy_number: str, reference: str):
+        with application.state.lock:
+            policy_or_404(policy_number)
+            claim_number = application.state.references.get((policy_number, reference))
+            if claim_number is None:
+                raise HTTPException(404, detail="Submission not found")
+            return deepcopy(application.state.claims[claim_number])
+
     return application
 
 

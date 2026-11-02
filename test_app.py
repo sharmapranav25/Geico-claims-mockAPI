@@ -242,3 +242,26 @@ def test_submit_without_body_and_unknown_field(client):
     assert response.status_code == 201
     assert response.json()['submission_reference'] is None
     assert client.post(path).status_code == 400
+
+
+def test_claim_by_reference_found_and_isolated(client):
+    path = '/policies/1015/claims/draft'
+    client.post(path, json={'occurred_at': '2026-10-31T10:00:00-07:00',
+                           'location': 'Test lot', 'description': 'Damage', 'vehicle_id': 'V15-1'})
+    claim = client.post(path + '/submit', json={'submission_reference': 'lookup-test'}).json()
+    result = client.get('/policies/1015/claims/by-reference/lookup-test')
+    assert result.status_code == 200
+    assert result.json() == claim
+    changed = result.json()
+    changed['loss']['description'] = 'changed'
+    assert client.get('/policies/1015/claims/by-reference/lookup-test').json() == claim
+    assert client.get('/policies/1014/claims/by-reference/lookup-test').status_code == 404
+
+
+def test_claim_by_reference_missing(client):
+    result = client.get('/policies/1015/claims/by-reference/missing')
+    assert result.status_code == 404
+    assert result.json() == {'detail': 'Submission not found'}
+    result = client.get('/policies/UNKNOWN/claims/by-reference/missing')
+    assert result.status_code == 404
+    assert result.json() == {'detail': 'Policy not found'}
