@@ -24,9 +24,9 @@ Interactive API docs: http://127.0.0.1:8000/docs (also `/redoc`); machine-readab
 | GET | `/policies` | 200; all policy numbers and names |
 | GET | `/policies/{policy_number}` | 200; full profile, submitted `claims`, `open_draft` or null, `claims_against` |
 | POST | `/policies/{policy_number}/claims/draft` | 201 when created; 200 when updating the current draft |
-| POST | `/policies/{policy_number}/claims/draft/submit` | 201; submitted claim with generated claim number |
+| POST | `/policies/{policy_number}/claims/draft/submit` | Optional `submission_reference` body; 201 for a new claim, 200 with the same claim on reference replay for that policy, even after draft deletion |
 
-The GET endpoints and submit endpoint have no request body. The upsert body is a loss-report object, **not** a policy profile or a wrapper named `loss`.
+The GET endpoints have no request body. Submit accepts an optional `{ "submission_reference": "sub-example" }` body; repeating the reference for the same policy returns the original claim with HTTP 200, even after its draft is deleted. Omitting the body keeps the existing submission behaviour. The upsert body is a loss-report object, **not** a policy profile or a wrapper named `loss`.
 
 ### Read policies
 

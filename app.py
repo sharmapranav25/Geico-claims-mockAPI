@@ -64,10 +64,16 @@ class DraftUpdate(BaseModel):
     evidence_link_sent: StrictBool = False
 
 
+class SubmitRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    submission_reference: Text
+
+
 def create_app():
     @asynccontextmanager
     async def lifespan(application):
         application.state.policies, application.state.drafts, application.state.claims = make_seed()
+        application.state.references = {}
         application.state.lock = Lock()
         yield
 
@@ -130,9 +136,14 @@ def create_app():
             return deepcopy(draft)
 
     @application.post("/policies/{policy_number}/claims/draft/submit", status_code=201)
-    def submit_draft(policy_number: str):
+    def submit_draft(policy_number: str, response: Response, request: SubmitRequest | None = None):
         with application.state.lock:
             policy_or_404(policy_number)
+            reference = request.submission_reference if request is not None else None
+            key = (policy_number, reference)
+            if reference is not None and key in application.state.references:
+                response.status_code = 200
+                return deepcopy(application.state.claims[application.state.references[key]])
             draft = application.state.drafts.get(policy_number)
             if draft is None:
                 raise HTTPException(400, detail="No open draft to submit")
@@ -141,9 +152,12 @@ def create_app():
             if missing:
                 raise HTTPException(400, detail={"message": "Draft is incomplete", "missing_fields": missing})
             claim = deepcopy(draft)
-            claim.update(status="submitted", claim_number=f"CLM-{uuid4().hex.upper()}",
+            claim.update(status="submitted", claim_number=f"CLM-{uuid4().hex[:8].upper()}",
+                         submission_reference=reference,
                          submitted_at=datetime.now(timezone.utc).isoformat())
             application.state.claims[claim["claim_number"]] = claim
+            if reference is not None:
+                application.state.references[key] = claim["claim_number"]
             del application.state.drafts[policy_number]
             return deepcopy(claim)
 

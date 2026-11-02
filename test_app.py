@@ -193,3 +193,52 @@ def test_seed_claims_match_expanded_template():
     assert {loss['reporting_intent'] for loss in losses} == {'A', 'B'}
     assert {loss['caller_role'] for loss in losses} == {'policyholder', 'representative', 'affected_person'}
     assert {loss['loss_type'] for loss in losses} == {'collision', 'theft', 'weather', 'other'}
+
+
+def test_submission_reference_replays_deleted_draft(client):
+    import re
+
+    path = '/policies/GEC-0004/claims/draft/submit'
+    before = len(client.get('/policies/GEC-0004').json()['claims'])
+    first = client.post(path, json={'submission_reference': 'sub-test'})
+    assert first.status_code == 201
+    claim = first.json()
+    assert claim['submission_reference'] == 'sub-test'
+    assert re.fullmatch(r'CLM-[0-9A-F]{8}', claim['claim_number'])
+    assert client.get('/policies/GEC-0004').json()['open_draft'] is None
+    replay = client.post(path, json={'submission_reference': 'sub-test'})
+    assert replay.status_code == 200
+    assert replay.json() == claim
+    assert len(client.get('/policies/GEC-0004').json()['claims']) == before + 1
+    assert client.post(path, json={'submission_reference': 'sub-new'}).status_code == 400
+    client.post('/policies/GEC-0004/claims/draft', json={'description': 'New draft'})
+    assert client.post(path, json={'submission_reference': 'sub-test'}).json() == claim
+    assert client.get('/policies/GEC-0004').json()['open_draft']['loss']['description'] == 'New draft'
+
+
+def test_submission_reference_is_scoped_to_policy(client):
+    payload = {'submission_reference': 'sub-shared'}
+    first = client.post('/policies/GEC-0004/claims/draft/submit', json=payload)
+    other = client.post('/policies/GEC-0005/claims/draft/submit', json=payload)
+    assert first.status_code == other.status_code == 201
+    assert first.json()['claim_number'] != other.json()['claim_number']
+    assert other.json()['policy_number'] == 'GEC-0005'
+    assert client.post('/policies/GEC-0015/claims/draft/submit', json=payload).status_code == 400
+
+
+def test_concurrent_reference_submissions_create_one_claim(client):
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        results = list(pool.map(lambda _: client.post('/policies/GEC-0004/claims/draft/submit',
+                            json={'submission_reference': 'sub-concurrent'}), range(2)))
+    assert sorted(r.status_code for r in results) == [200, 201]
+    assert results[0].json() == results[1].json()
+    assert len(client.get('/policies/GEC-0004').json()['claims']) == 1
+
+
+def test_submit_without_body_and_unknown_field(client):
+    path = '/policies/GEC-0004/claims/draft/submit'
+    assert client.post(path, json={'submission_reference': 'sub-test', 'unknown': True}).status_code == 422
+    response = client.post(path)
+    assert response.status_code == 201
+    assert response.json()['submission_reference'] is None
+    assert client.post(path).status_code == 400
