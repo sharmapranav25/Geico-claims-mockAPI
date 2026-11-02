@@ -1,9 +1,9 @@
 """Deterministic fictitious profiles and initial claim activity."""
 
 NAMES = [
-    "Avery Morgan", "Blair Chen", "Casey Rivera", "Devon Patel", "Emery Brooks",
-    "Finley Kim", "Harper Singh", "Jordan Ellis", "Kai Bennett", "Logan Reed",
-    "Morgan Hayes", "Parker Diaz", "Quinn Foster", "Riley Nguyen", "Sage Turner",
+    "Michael Johnson", "Sarah Miller", "David Smith", "Emily Davis", "James Wilson",
+    "Jessica Brown", "Robert Taylor", "Ashley Moore", "John Anderson", "Amanda Clark",
+    "William Harris", "Jennifer Lewis", "Thomas Walker", "Lisa Hall", "Daniel Young",
 ]
 
 
@@ -12,7 +12,7 @@ def make_seed():
     # Groups 1–5, 4–8, and 8–12 overlap while covering 12/15 policies.
     # This gives both combined and isolated reference-data cases in a small pool.
     for i, name in enumerate(NAMES, 1):
-        number = f"GEC-{i:04d}"
+        number = str(1000 + i)
         vehicles = [
             {"vehicle_id": f"V{i:02d}-{j}", "year": 2020 + j,
              "make": "Toyota" if j == 1 else "Honda",
@@ -42,7 +42,7 @@ def make_seed():
                     "reporting_intent": "B" if i == 2 else "A",
                     "caller_role": "representative" if i == 4 else "affected_person" if i == 2 else "policyholder",
                     "represented_person": {"name": name, "relationship": "parent"} if i == 4 else None,
-                    "caller_name": "Taylor Patel" if i == 4 else name,
+                    "caller_name": "Mark Davis" if i == 4 else name,
                     "caller_phone": "628-268-8753",
                     "occurred_at": "2026-10-20T14:30:00-07:00",
                     "discovered_at": "2026-10-20T17:00:00-07:00" if i == 4 else None,
@@ -58,7 +58,7 @@ def make_seed():
                     )[i - 1],
                     "vehicle_id": vehicles[0]["vehicle_id"],
                     "other_party": {
-                        "policy_number": f"GEC-{i + 6:04d}", "name": NAMES[i + 5],
+                        "policy_number": str(1000 + i + 6), "name": NAMES[i + 5],
                         "phone": "628-268-8753", "insurer": "GEICO",
                         "vehicle_description": "2021 Toyota Camry",
                     } if i <= 2 else None,

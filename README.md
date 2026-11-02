@@ -32,21 +32,21 @@ The GET endpoints have no request body. Submit accepts an optional `{ "submissio
 
 ```bash
 curl -sS http://127.0.0.1:8000/policies
-curl -sS http://127.0.0.1:8000/policies/GEC-0015
+curl -sS http://127.0.0.1:8000/policies/1015
 ```
 
-The listing returns an array such as `[{"policy_number":"GEC-0001","name":"Avery Morgan"}, ...]`; the complete actual 15-entry response is in `completion-output.txt`.
+The listing returns an array such as `[{"policy_number":"1001","name":"Michael Johnson"}, ...]`; the complete actual 15-entry response is in `completion-output.txt`.
 
 Example full profile response:
 
 ```json
-{"policy_number":"GEC-0015","name":"Sage Turner","phone":"628-268-8753","vehicles":[{"vehicle_id":"V15-1","year":2021,"make":"Toyota","model":"Camry"}],"drivers":[{"driver_id":"D15-1","name":"Sage Turner","relationship":"policyholder"}],"beneficiaries":[],"claims":[],"open_draft":null,"claims_against":[]}
+{"policy_number":"1015","name":"Daniel Young","phone":"628-268-8753","vehicles":[{"vehicle_id":"V15-1","year":2021,"make":"Toyota","model":"Camry"}],"drivers":[{"driver_id":"D15-1","name":"Daniel Young","relationship":"policyholder"}],"beneficiaries":[],"claims":[],"open_draft":null,"claims_against":[]}
 ```
 
 A policy referenced by a submitted claim includes, for example:
 
 ```json
-{"claims_against":[{"claim_number":"CLM-SEED-0001","filed_under_policy":"GEC-0001","status":"submitted"}]}
+{"claims_against":[{"claim_number":"CLM-SEED-0001","filed_under_policy":"1001","status":"submitted"}]}
 ```
 
 This indicates that a claim names the policy as the other party; it does not determine fault or coverage. Naming another policy in an unsubmitted draft does not create a `claims_against` entry.
@@ -54,15 +54,15 @@ This indicates that a claim names the policy as the other party; it does not det
 ### Create or update a draft
 
 ```bash
-curl -sS -X POST http://127.0.0.1:8000/policies/GEC-0015/claims/draft \
+curl -sS -X POST http://127.0.0.1:8000/policies/1015/claims/draft \
   -H 'Content-Type: application/json' \
-  -d '{"reporting_intent":"A","caller_role":"representative","represented_person":{"name":"Sage Turner","relationship":"parent"},"caller_name":"Jamie Turner","caller_phone":"628-268-8753","occurred_at":"2026-10-31T10:00:00-07:00","discovered_at":"2026-10-31T11:00:00-07:00","location":"Test parking lot","description":"Test scrape while parked.","vehicle_id":"V15-1","loss_type":"collision","other_party":{"name":"Riley Nguyen","phone":"628-268-8753","insurer":"GEICO","policy_number":"GEC-0014","vehicle_description":"2021 Toyota Camry"},"police_report":{"filed":true,"report_number":"MOCK-123","department":"Mock Police"},"witnesses":[{"name":"Alex Sample","phone":"628-268-8753"}],"evidence_link_sent":false}'
+  -d '{"reporting_intent":"A","caller_role":"representative","represented_person":{"name":"Daniel Young","relationship":"parent"},"caller_name":"Jamie Turner","caller_phone":"628-268-8753","occurred_at":"2026-10-31T10:00:00-07:00","discovered_at":"2026-10-31T11:00:00-07:00","location":"Test parking lot","description":"Test scrape while parked.","vehicle_id":"V15-1","loss_type":"collision","other_party":{"name":"Lisa Hall","phone":"628-268-8753","insurer":"GEICO","policy_number":"1014","vehicle_description":"2021 Toyota Camry"},"police_report":{"filed":true,"report_number":"MOCK-123","department":"Mock Police"},"witnesses":[{"name":"Alex Sample","phone":"628-268-8753"}],"evidence_link_sent":false}'
 ```
 
 Example 201 response (identifiers vary):
 
 ```json
-{"draft_id":"draft-example","policy_number":"GEC-0015","status":"draft","loss":{"reporting_intent":"A","caller_role":"representative","represented_person":{"name":"Sage Turner","relationship":"parent"},"caller_name":"Jamie Turner","caller_phone":"628-268-8753","occurred_at":"2026-10-31T10:00:00-07:00","discovered_at":"2026-10-31T11:00:00-07:00","location":"Test parking lot","description":"Test scrape while parked.","vehicle_id":"V15-1","loss_type":"collision","other_party":{"name":"Riley Nguyen","phone":"628-268-8753","insurer":"GEICO","policy_number":"GEC-0014","vehicle_description":"2021 Toyota Camry"},"police_report":{"filed":true,"report_number":"MOCK-123","department":"Mock Police"},"witnesses":[{"name":"Alex Sample","phone":"628-268-8753"}],"evidence_link_sent":false}}
+{"draft_id":"draft-example","policy_number":"1015","status":"draft","loss":{"reporting_intent":"A","caller_role":"representative","represented_person":{"name":"Daniel Young","relationship":"parent"},"caller_name":"Jamie Turner","caller_phone":"628-268-8753","occurred_at":"2026-10-31T10:00:00-07:00","discovered_at":"2026-10-31T11:00:00-07:00","location":"Test parking lot","description":"Test scrape while parked.","vehicle_id":"V15-1","loss_type":"collision","other_party":{"name":"Lisa Hall","phone":"628-268-8753","insurer":"GEICO","policy_number":"1014","vehicle_description":"2021 Toyota Camry"},"police_report":{"filed":true,"report_number":"MOCK-123","department":"Mock Police"},"witnesses":[{"name":"Alex Sample","phone":"628-268-8753"}],"evidence_link_sent":false}}
 ```
 
 All request fields are optional on each update. `{}` creates an empty draft or leaves an existing draft unchanged. Omitted fields retain their current values. Explicit `null` clears nullable fields; clear `witnesses` with `[]` and reset `evidence_link_sent` with `false` (neither accepts null). Nested objects and lists, when supplied, replace the entire previous object/list rather than merging individual sub-fields. These partial-update semantics retain `exclude_unset`.
@@ -94,13 +94,13 @@ Profile identity (`name`), `phone`, `policy_number`, `beneficiaries`, `vehicles`
 ### Submit
 
 ```bash
-curl -sS -X POST http://127.0.0.1:8000/policies/GEC-0015/claims/draft/submit
+curl -sS -X POST http://127.0.0.1:8000/policies/1015/claims/draft/submit
 ```
 
 Example 201 response (identifiers and submission timestamp vary):
 
 ```json
-{"draft_id":"draft-example","policy_number":"GEC-0015","status":"submitted","loss":{"reporting_intent":"A","caller_role":"representative","represented_person":{"name":"Sage Turner","relationship":"parent"},"caller_name":"Jamie Turner","caller_phone":"628-268-8753","occurred_at":"2026-10-31T10:00:00-07:00","discovered_at":"2026-10-31T11:00:00-07:00","location":"Test parking lot","description":"Test scrape while parked.","vehicle_id":"V15-1","loss_type":"collision","other_party":{"name":"Riley Nguyen","phone":"628-268-8753","insurer":"GEICO","policy_number":"GEC-0014","vehicle_description":"2021 Toyota Camry"},"police_report":{"filed":true,"report_number":"MOCK-123","department":"Mock Police"},"witnesses":[{"name":"Alex Sample","phone":"628-268-8753"}],"evidence_link_sent":false},"claim_number":"CLM-EXAMPLE","submitted_at":"2026-11-01T20:00:00+00:00"}
+{"draft_id":"draft-example","policy_number":"1015","status":"submitted","loss":{"reporting_intent":"A","caller_role":"representative","represented_person":{"name":"Daniel Young","relationship":"parent"},"caller_name":"Jamie Turner","caller_phone":"628-268-8753","occurred_at":"2026-10-31T10:00:00-07:00","discovered_at":"2026-10-31T11:00:00-07:00","location":"Test parking lot","description":"Test scrape while parked.","vehicle_id":"V15-1","loss_type":"collision","other_party":{"name":"Lisa Hall","phone":"628-268-8753","insurer":"GEICO","policy_number":"1014","vehicle_description":"2021 Toyota Camry"},"police_report":{"filed":true,"report_number":"MOCK-123","department":"Mock Police"},"witnesses":[{"name":"Alex Sample","phone":"628-268-8753"}],"evidence_link_sent":false},"claim_number":"CLM-EXAMPLE","submitted_at":"2026-11-01T20:00:00+00:00"}
 ```
 
 Submission requires `occurred_at`, `location`, `description`, and `vehicle_id`. It atomically copies the draft to a locked submitted claim and removes the open draft. The generated claim number is returned only after that succeeds. Concurrent submissions of one draft create one claim; the other request receives 400. There is no durable idempotency across restarts.
@@ -125,13 +125,13 @@ Invalid requests leave existing data unchanged. FastAPI validates request bodies
 
 | Category | Policy numbers |
 | --- | --- |
-| Multiple beneficiaries (2–3 beyond policyholder) | GEC-0001, GEC-0002, GEC-0003, GEC-0004, GEC-0005 |
-| Multiple vehicles (2–3 total) | GEC-0004, GEC-0005, GEC-0006, GEC-0007, GEC-0008 |
-| Multiple additional listed drivers (2–3 beyond policyholder) | GEC-0008, GEC-0009, GEC-0010, GEC-0011, GEC-0012 |
-| Submitted claim filed by policyholder | GEC-0001, GEC-0002, GEC-0003 |
-| Open draft | GEC-0004, GEC-0005, GEC-0006 |
-| Named as other party in a submitted claim | GEC-0007 (filed under GEC-0001), GEC-0008 (filed under GEC-0002) |
-| No claim activity | GEC-0009, GEC-0010, GEC-0011, GEC-0012, GEC-0013, GEC-0014, GEC-0015 |
+| Multiple beneficiaries (2–3 beyond policyholder) | 1001, 1002, 1003, 1004, 1005 |
+| Multiple vehicles (2–3 total) | 1004, 1005, 1006, 1007, 1008 |
+| Multiple additional listed drivers (2–3 beyond policyholder) | 1008, 1009, 1010, 1011, 1012 |
+| Submitted claim filed by policyholder | 1001, 1002, 1003 |
+| Open draft | 1004, 1005, 1006 |
+| Named as other party in a submitted claim | 1007 (filed under 1001), 1008 (filed under 1002) |
+| No claim activity | 1009, 1010, 1011, 1012, 1013, 1014, 1015 |
 
 The reference-data groups intentionally overlap at 0004/0005 and 0008. Their union covers 12 of 15 policies, leaving three simple baseline profiles. Each profile always has its policyholder listed as a driver and at least one vehicle. Outside the beneficiary group, the beneficiary list is empty. These mock beneficiary labels do not establish authority or imply real product terms.
 
@@ -139,12 +139,12 @@ The six seeded report bodies exercise the expanded template:
 
 | Policy | Intent / caller | Loss and optional details |
 | --- | --- | --- |
-| GEC-0001 | A / policyholder | Collision; other party GEC-0007; police report and witness |
-| GEC-0002 | B / affected_person | Collision; other party GEC-0008; no police filing; mock evidence flag true |
-| GEC-0003 | A / policyholder | Weather / hail; optional objects null |
-| GEC-0004 | A / representative | Taylor Patel reports for parent Devon Patel; theft, later discovery, police report |
-| GEC-0005 | A / policyholder | Other / shopping cart damage |
-| GEC-0006 | A / policyholder | Weather / fallen branch |
+| 1001 | A / policyholder | Collision; other party 1007; police report and witness |
+| 1002 | B / affected_person | Collision; other party 1008; no police filing; mock evidence flag true |
+| 1003 | A / policyholder | Weather / hail; optional objects null |
+| 1004 | A / representative | Mark Davis reports for parent Emily Davis; theft, later discovery, police report |
+| 1005 | A / policyholder | Other / shopping cart damage |
+| 1006 | A / policyholder | Weather / fallen branch |
 
 These are stored intake examples, not verification of authority or claims workflow decisions.
 
@@ -164,4 +164,4 @@ cat completion-output.txt
 
 `smoke_check.py` uses Python's standard-library HTTP client. It prints exact methods, URLs, request bodies, status codes, and response bodies and asserts expected status codes. `completion-output.txt` is the historical initial run (before the expanded claim template), including all 15 policy selections, all four seeded activity states, unknown-policy 404, create/update/submit, missing/incomplete draft failures, read-only-field rejection, and the new other-party linkage.
 
-The demonstration changes GEC-0015 and GEC-0014; restart the server before rerunning it to restore the documented seed states. Unit tests use isolated stores and cover immutability, partial updates, null clearing, bad references, and concurrent submission. The tested dependency combination emits a Starlette warning about future TestClient HTTP transport changes; the suite covers the expanded template in addition to the original checks.
+The demonstration changes 1015 and 1014; restart the server before rerunning it to restore the documented seed states. Unit tests use isolated stores and cover immutability, partial updates, null clearing, bad references, and concurrent submission. The tested dependency combination emits a Starlette warning about future TestClient HTTP transport changes; the suite covers the expanded template in addition to the original checks.
