@@ -1,6 +1,6 @@
 # Mock GEICO Policy and Claims API
 
-A standalone local FastAPI service for voice-agent HTTP integration tests. It has 15 fabricated policyholders, immutable policy profiles, and an in-memory draft-to-claim lifecycle. Every profile deliberately uses the supplied test phone number, **628-268-8763**. The service never sends SMS or places calls. There is no authentication, identity verification, coverage decision, investigation, or payout logic.
+A standalone local FastAPI service for voice-agent HTTP integration tests. It has 15 fabricated policyholders, immutable policy profiles, and an in-memory draft-to-claim lifecycle. Every profile deliberately uses the supplied test phone number, **628-268-8753**. The service never sends SMS or places calls. There is no authentication, identity verification, coverage decision, investigation, or payout logic.
 
 ## Run
 
@@ -40,7 +40,7 @@ The listing returns an array such as `[{"policy_number":"GEC-0001","name":"Avery
 Example full profile response:
 
 ```json
-{"policy_number":"GEC-0015","name":"Sage Turner","phone":"628-268-8763","vehicles":[{"vehicle_id":"V15-1","year":2021,"make":"Toyota","model":"Camry"}],"drivers":[{"driver_id":"D15-1","name":"Sage Turner","relationship":"policyholder"}],"beneficiaries":[],"claims":[],"open_draft":null,"claims_against":[]}
+{"policy_number":"GEC-0015","name":"Sage Turner","phone":"628-268-8753","vehicles":[{"vehicle_id":"V15-1","year":2021,"make":"Toyota","model":"Camry"}],"drivers":[{"driver_id":"D15-1","name":"Sage Turner","relationship":"policyholder"}],"beneficiaries":[],"claims":[],"open_draft":null,"claims_against":[]}
 ```
 
 A policy referenced by a submitted claim includes, for example:
@@ -56,13 +56,13 @@ This indicates that a claim names the policy as the other party; it does not det
 ```bash
 curl -sS -X POST http://127.0.0.1:8000/policies/GEC-0015/claims/draft \
   -H 'Content-Type: application/json' \
-  -d '{"reporting_intent":"A","caller_role":"representative","represented_person":{"name":"Sage Turner","relationship":"parent"},"caller_name":"Jamie Turner","caller_phone":"628-268-8763","occurred_at":"2026-10-31T10:00:00-07:00","discovered_at":"2026-10-31T11:00:00-07:00","location":"Test parking lot","description":"Test scrape while parked.","vehicle_id":"V15-1","loss_type":"collision","other_party":{"name":"Riley Nguyen","phone":"628-268-8763","insurer":"GEICO","policy_number":"GEC-0014","vehicle_description":"2021 Toyota Camry"},"police_report":{"filed":true,"report_number":"MOCK-123","department":"Mock Police"},"witnesses":[{"name":"Alex Sample","phone":"628-268-8763"}],"evidence_link_sent":false}'
+  -d '{"reporting_intent":"A","caller_role":"representative","represented_person":{"name":"Sage Turner","relationship":"parent"},"caller_name":"Jamie Turner","caller_phone":"628-268-8753","occurred_at":"2026-10-31T10:00:00-07:00","discovered_at":"2026-10-31T11:00:00-07:00","location":"Test parking lot","description":"Test scrape while parked.","vehicle_id":"V15-1","loss_type":"collision","other_party":{"name":"Riley Nguyen","phone":"628-268-8753","insurer":"GEICO","policy_number":"GEC-0014","vehicle_description":"2021 Toyota Camry"},"police_report":{"filed":true,"report_number":"MOCK-123","department":"Mock Police"},"witnesses":[{"name":"Alex Sample","phone":"628-268-8753"}],"evidence_link_sent":false}'
 ```
 
 Example 201 response (identifiers vary):
 
 ```json
-{"draft_id":"draft-example","policy_number":"GEC-0015","status":"draft","loss":{"reporting_intent":"A","caller_role":"representative","represented_person":{"name":"Sage Turner","relationship":"parent"},"caller_name":"Jamie Turner","caller_phone":"628-268-8763","occurred_at":"2026-10-31T10:00:00-07:00","discovered_at":"2026-10-31T11:00:00-07:00","location":"Test parking lot","description":"Test scrape while parked.","vehicle_id":"V15-1","loss_type":"collision","other_party":{"name":"Riley Nguyen","phone":"628-268-8763","insurer":"GEICO","policy_number":"GEC-0014","vehicle_description":"2021 Toyota Camry"},"police_report":{"filed":true,"report_number":"MOCK-123","department":"Mock Police"},"witnesses":[{"name":"Alex Sample","phone":"628-268-8763"}],"evidence_link_sent":false}}
+{"draft_id":"draft-example","policy_number":"GEC-0015","status":"draft","loss":{"reporting_intent":"A","caller_role":"representative","represented_person":{"name":"Sage Turner","relationship":"parent"},"caller_name":"Jamie Turner","caller_phone":"628-268-8753","occurred_at":"2026-10-31T10:00:00-07:00","discovered_at":"2026-10-31T11:00:00-07:00","location":"Test parking lot","description":"Test scrape while parked.","vehicle_id":"V15-1","loss_type":"collision","other_party":{"name":"Riley Nguyen","phone":"628-268-8753","insurer":"GEICO","policy_number":"GEC-0014","vehicle_description":"2021 Toyota Camry"},"police_report":{"filed":true,"report_number":"MOCK-123","department":"Mock Police"},"witnesses":[{"name":"Alex Sample","phone":"628-268-8753"}],"evidence_link_sent":false}}
 ```
 
 All request fields are optional on each update. `{}` creates an empty draft or leaves an existing draft unchanged. Omitted fields retain their current values. Explicit `null` clears nullable fields; clear `witnesses` with `[]` and reset `evidence_link_sent` with `false` (neither accepts null). Nested objects and lists, when supplied, replace the entire previous object/list rather than merging individual sub-fields. These partial-update semantics retain `exclude_unset`.
@@ -100,7 +100,7 @@ curl -sS -X POST http://127.0.0.1:8000/policies/GEC-0015/claims/draft/submit
 Example 201 response (identifiers and submission timestamp vary):
 
 ```json
-{"draft_id":"draft-example","policy_number":"GEC-0015","status":"submitted","loss":{"reporting_intent":"A","caller_role":"representative","represented_person":{"name":"Sage Turner","relationship":"parent"},"caller_name":"Jamie Turner","caller_phone":"628-268-8763","occurred_at":"2026-10-31T10:00:00-07:00","discovered_at":"2026-10-31T11:00:00-07:00","location":"Test parking lot","description":"Test scrape while parked.","vehicle_id":"V15-1","loss_type":"collision","other_party":{"name":"Riley Nguyen","phone":"628-268-8763","insurer":"GEICO","policy_number":"GEC-0014","vehicle_description":"2021 Toyota Camry"},"police_report":{"filed":true,"report_number":"MOCK-123","department":"Mock Police"},"witnesses":[{"name":"Alex Sample","phone":"628-268-8763"}],"evidence_link_sent":false},"claim_number":"CLM-EXAMPLE","submitted_at":"2026-11-01T20:00:00+00:00"}
+{"draft_id":"draft-example","policy_number":"GEC-0015","status":"submitted","loss":{"reporting_intent":"A","caller_role":"representative","represented_person":{"name":"Sage Turner","relationship":"parent"},"caller_name":"Jamie Turner","caller_phone":"628-268-8753","occurred_at":"2026-10-31T10:00:00-07:00","discovered_at":"2026-10-31T11:00:00-07:00","location":"Test parking lot","description":"Test scrape while parked.","vehicle_id":"V15-1","loss_type":"collision","other_party":{"name":"Riley Nguyen","phone":"628-268-8753","insurer":"GEICO","policy_number":"GEC-0014","vehicle_description":"2021 Toyota Camry"},"police_report":{"filed":true,"report_number":"MOCK-123","department":"Mock Police"},"witnesses":[{"name":"Alex Sample","phone":"628-268-8753"}],"evidence_link_sent":false},"claim_number":"CLM-EXAMPLE","submitted_at":"2026-11-01T20:00:00+00:00"}
 ```
 
 Submission requires `occurred_at`, `location`, `description`, and `vehicle_id`. It atomically copies the draft to a locked submitted claim and removes the open draft. The generated claim number is returned only after that succeeds. Concurrent submissions of one draft create one claim; the other request receives 400. There is no durable idempotency across restarts.
