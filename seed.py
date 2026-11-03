@@ -1,9 +1,18 @@
 """Deterministic fictitious profiles and initial claim activity."""
 
 NAMES = [
-    "Avery Morgan", "Blair Chen", "Casey Rivera", "Devon Patel", "Emery Brooks",
-    "Finley Kim", "Harper Singh", "Jordan Ellis", "Kai Bennett", "Logan Reed",
-    "Morgan Hayes", "Parker Diaz", "Quinn Foster", "Riley Nguyen", "Sage Turner",
+    "Michael Johnson", "Sarah Miller", "David Smith", "Emily Davis", "James Wilson",
+    "Jessica Brown", "Robert Taylor", "Ashley Moore", "John Anderson", "Amanda Clark",
+    "William Harris", "Jennifer Lewis", "Thomas Walker", "Lisa Hall", "Daniel Young",
+]
+
+
+VEHICLE_MODELS = [
+    ("Toyota", "Camry"), ("Honda", "Accord"), ("Subaru", "Outback"),
+    ("Ford", "Escape"), ("Chevrolet", "Malibu"), ("Hyundai", "Sonata"),
+    ("Mazda", "CX-5"), ("Honda", "CR-V"), ("Ford", "F-150"),
+    ("Kia", "Telluride"), ("Nissan", "Altima"), ("Toyota", "Sienna"),
+    ("Volkswagen", "Tiguan"), ("Jeep", "Grand Cherokee"), ("Tesla", "Model 3"),
 ]
 
 
@@ -12,11 +21,11 @@ def make_seed():
     # Groups 1–5, 4–8, and 8–12 overlap while covering 12/15 policies.
     # This gives both combined and isolated reference-data cases in a small pool.
     for i, name in enumerate(NAMES, 1):
-        number = f"GEC-{i:04d}"
+        number = str(1000 + i)
         vehicles = [
             {"vehicle_id": f"V{i:02d}-{j}", "year": 2020 + j,
-             "make": "Toyota" if j == 1 else "Honda",
-             "model": "Camry" if j == 1 else "Civic"}
+             "make": VEHICLE_MODELS[(i + j - 2) % len(VEHICLE_MODELS)][0],
+             "model": VEHICLE_MODELS[(i + j - 2) % len(VEHICLE_MODELS)][1]}
             for j in range(1, (2 + i % 2 if 4 <= i <= 8 else 1) + 1)
         ]
         drivers = [{"driver_id": f"D{i:02d}-1", "name": name, "relationship": "policyholder"}]
@@ -31,7 +40,7 @@ def make_seed():
             for j in range(1, (2 + i % 2 if i <= 5 else 0) + 1)
         ]
         policies[number] = {
-            "policy_number": number, "name": name, "phone": "628-268-8763",
+            "policy_number": number, "name": name, "phone": "628-268-8753",
             "vehicles": vehicles, "drivers": drivers, "beneficiaries": beneficiaries,
         }
         if i <= 6:
@@ -42,8 +51,8 @@ def make_seed():
                     "reporting_intent": "B" if i == 2 else "A",
                     "caller_role": "representative" if i == 4 else "affected_person" if i == 2 else "policyholder",
                     "represented_person": {"name": name, "relationship": "parent"} if i == 4 else None,
-                    "caller_name": "Taylor Patel" if i == 4 else name,
-                    "caller_phone": "628-268-8763",
+                    "caller_name": "Mark Davis" if i == 4 else name,
+                    "caller_phone": "628-268-8753",
                     "occurred_at": "2026-10-20T14:30:00-07:00",
                     "discovered_at": "2026-10-20T17:00:00-07:00" if i == 4 else None,
                     "location": "Mock parking lot",
@@ -58,15 +67,15 @@ def make_seed():
                     )[i - 1],
                     "vehicle_id": vehicles[0]["vehicle_id"],
                     "other_party": {
-                        "policy_number": f"GEC-{i + 6:04d}", "name": NAMES[i + 5],
-                        "phone": "628-268-8763", "insurer": "GEICO",
-                        "vehicle_description": "2021 Toyota Camry",
+                        "policy_number": str(1000 + i + 6), "name": NAMES[i + 5],
+                        "phone": "628-268-8753", "insurer": "GEICO",
+                        "vehicle_description": "2021 " + " ".join(VEHICLE_MODELS[i + 5]),
                     } if i <= 2 else None,
                     "police_report": {
                         "filed": True, "report_number": f"MOCK-REPORT-{i:04d}",
                         "department": "Mock City Police",
                     } if i in (1, 4) else {"filed": False} if i == 2 else None,
-                    "witnesses": [{"name": "Alex Sample", "phone": "628-268-8763"}] if i == 1 else [],
+                    "witnesses": [{"name": "Alex Sample", "phone": "628-268-8753"}] if i == 1 else [],
                     # A recorded mock flag only; no message is actually sent.
                     "evidence_link_sent": i == 2,
                 },
