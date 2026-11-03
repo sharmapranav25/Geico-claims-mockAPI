@@ -3,101 +3,226 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Mock GEICO policy browser</title>
+  <title>Policy &amp; claims · Mock demo</title>
   <style>
-    body { font: 16px/1.5 system-ui, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
-    select { font: inherit; max-width: 100%; padding: .4rem; }
-    section { border-top: 1px solid #ccc; margin-top: 1.5rem; }
-    dt { font-weight: bold; } dd { margin: 0 0 .6rem 1rem; overflow-wrap: anywhere; }
-    li { margin-bottom: 1rem; } h2 { font-size: 1.2rem; }
+    :root { --navy: #0B2A5B; --navy-soft: #E8EEF7; --navy-border: #B4C4DC; --yellow: #FFC72C; --yellow-soft: #FFF6D6; --yellow-text: #6B5200; color-scheme: light; font: 16px/1.5 system-ui, sans-serif; color: #202925; background: #f4f5f3; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { cursor: wait; opacity: .6; }
+    :focus-visible { outline: 3px solid var(--navy); outline-offset: 3px; }
+    .shell { max-width: 1440px; margin: auto; padding: 40px 40px 64px; }
+    header { display: flex; justify-content: space-between; align-items: center; gap: 24px; margin-bottom: 28px; background: var(--navy); color: white; padding: 24px 28px; border-radius: 12px; }
+    h1, h2, h3, p { margin: 0; }
+    h1 { font-size: clamp(1.7rem, 3vw, 2.3rem); letter-spacing: -.04em; font-weight: 650; }
+    h2 { font-size: 1.2rem; letter-spacing: -.02em; }
+    h3 { font-size: 1rem; }
+    h2, h3 { color: var(--navy); }
+    .eyebrow { font-size: .75rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #526359; margin-bottom: 8px; }
+    .muted, dt { color: #616b65; }
+    header p { margin-top: 6px; }
+    header h1, header .eyebrow, header .muted { color: white; }
+    #refresh { background: var(--yellow); color: var(--navy); font-weight: 650; border: 0; border-radius: 8px; padding: 12px 20px; white-space: nowrap; }
+    #refresh:focus-visible { outline-color: white; }
+    .workspace { display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 28px; align-items: start; }
+    aside, .panel { background: white; border: 1px solid #dce1dc; border-radius: 12px; }
+    aside { padding: 20px; }
+    label { display: block; font-weight: 600; margin-bottom: 10px; }
+    input { width: 100%; padding: 11px 12px; border: 1px solid #aeb9b1; border-radius: 7px; background: white; color: inherit; }
+    #count { font-size: .8rem; margin: 14px 0 10px; }
+    #policies { display: grid; gap: 5px; max-height: 65vh; overflow: auto; padding: 3px; margin: -3px; }
+    .policy { border: 1px solid transparent; background: transparent; text-align: left; padding: 11px 12px; border-radius: 7px; color: inherit; }
+    .policy:hover { background: var(--navy-soft); }
+    .policy[aria-pressed="true"] { background: var(--navy-soft); border-color: var(--navy); }
+    .policy strong, .policy span { display: block; }
+    .policy span { font-size: .9rem; }
+    #status { font-size: .875rem; margin-bottom: 16px; min-height: 1.5em; color: #526359; }
+    #status.error { color: #963b30; }
+    #details { display: grid; gap: 20px; }
+    .panel { padding: 26px; }
+    .panel-head, .record-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .panel-head { margin-bottom: 20px; }
+    .tag { background: var(--navy-soft); color: var(--navy); border-radius: 5px; padding: 4px 9px; font-size: .75rem; font-weight: 650; }
+    .draft-tag { background: var(--yellow-soft); color: var(--yellow-text); }
+    dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 28px; margin: 0; }
+    dt { font-size: .8rem; margin-bottom: 3px; }
+    dd { margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+    .wide { grid-column: 1 / -1; }
+    .vehicles { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .vehicles li { background: #f6f7f5; border: 1px solid #e4e8e2; border-radius: 8px; padding: 16px; }
+    .vehicles small { display: block; color: #616b65; margin-top: 4px; }
+    .record + .record { border-top: 1px solid #dce1dc; margin-top: 24px; padding-top: 24px; }
+    .record-head { margin-bottom: 18px; }
+    .empty { color: #616b65; padding: 16px; background: #f6f7f5; border-radius: 8px; }
+    footer { color: #616b65; font-size: .8rem; margin-top: 28px; }
+    @media (min-width: 1600px) { :root { font-size: 18px; } }
+    @media (max-width: 900px) { .shell { padding: 24px; } .workspace { grid-template-columns: 235px minmax(0, 1fr); gap: 18px; } .panel { padding: 20px; } .vehicles { grid-template-columns: 1fr; } }
+    @media (max-width: 650px) { .shell { padding: 20px 16px; } header { align-items: start; flex-direction: column; gap: 16px; } .workspace { grid-template-columns: 1fr; } #policies { max-height: 220px; } dl { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
-  <h1>Mock GEICO policy browser</h1>
-  <p>Read-only test data. Select a policy to view its profile and claim activity.</p>
-  <label for="policy">Policy</label>
-  <select id="policy" disabled><option value="">Select a policy</option></select>
-  <p id="status" role="status" aria-live="polite">Loading policies…</p>
-  <main id="details" aria-label="Policy details"></main>
-  <noscript>Enable JavaScript to load policies and view their details.</noscript>
+  <div class="shell">
+    <header>
+      <div><div class="eyebrow">Mock demo · Fictitious data</div><h1>Policy &amp; claims</h1><p class="muted">Review what the agent checks and what a call saved.</p></div>
+      <button id="refresh" type="button">Refresh data</button>
+    </header>
+    <div class="workspace">
+      <aside aria-label="Find a policy">
+        <label for="search">Find a policy</label>
+        <input id="search" type="search" placeholder="Policy number or name" autocomplete="off" aria-controls="policies">
+        <p id="count" class="muted" role="status"></p>
+        <nav id="policies" aria-label="Policies"></nav>
+      </aside>
+      <main>
+        <p id="status" role="status" aria-live="polite">Loading policies…</p>
+        <div id="details" aria-label="Policy details" aria-busy="true"></div>
+      </main>
+    </div>
+    <footer>Read-only mock viewer. Refresh after a call to see the latest saved draft or submitted claim.</footer>
+    <noscript>Enable JavaScript to load policies and view claim activity.</noscript>
+  </div>
   <script>
-    const select = document.getElementById('policy');
+    const search = document.getElementById('search');
+    const list = document.getElementById('policies');
     const status = document.getElementById('status');
     const details = document.getElementById('details');
-    let selectionVersion = 0;
+    const refresh = document.getElementById('refresh');
+    let policies = [], selected = '', version = 0;
 
+    function el(tag, text, className) {
+      const node = document.createElement(tag);
+      if (text !== undefined) node.textContent = text;
+      if (className) node.className = className;
+      return node;
+    }
     async function getJSON(url) {
-      const response = await fetch(url);
+      const response = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(10000) });
       if (!response.ok) throw new Error(`Request failed (HTTP ${response.status}).`);
       return response.json();
     }
-
-    function element(tag, text) {
-      const node = document.createElement(tag);
-      if (text !== undefined) node.textContent = text;
-      return node;
+    function message(text, error = false) {
+      status.textContent = text;
+      status.className = error ? 'error' : '';
     }
-
-    function render(value) {
-      if (value === null || value === undefined) return element('p', 'None');
-      if (Array.isArray(value)) {
-        if (!value.length) return element('p', 'None');
-        const list = element('ul');
-        value.forEach(item => { const row = element('li'); row.append(render(item)); list.append(row); });
-        return list;
-      }
-      if (typeof value === 'object') {
-        const list = element('dl');
-        Object.entries(value).forEach(([key, item]) => {
-          const label = key.replaceAll('_', ' ');
-          const description = element('dd');
-          description.append(render(item));
-          list.append(element('dt', label.charAt(0).toUpperCase() + label.slice(1)), description);
-        });
-        return list;
-      }
-      return element('span', String(value));
+    function fields(rows) {
+      const dl = el('dl');
+      rows.forEach(([label, value, wide]) => {
+        if (value === null || value === undefined || value === '') return;
+        const pair = el('div', undefined, wide ? 'wide' : '');
+        pair.append(el('dt', label), el('dd', String(value)));
+        dl.append(pair);
+      });
+      return dl;
     }
-
-    select.addEventListener('change', async () => {
-      const version = ++selectionVersion;
+    function date(value) {
+      if (!value) return 'Not recorded';
+      const parsed = new Date(value);
+      return Number.isNaN(parsed.getTime()) ? 'Not recorded' : new Intl.DateTimeFormat('en-US', {
+        dateStyle: 'medium', timeStyle: 'short', timeZone: 'America/Los_Angeles'
+      }).format(parsed) + ' Pacific';
+    }
+    function vehicleName(vehicle) { return [vehicle.year, vehicle.make, vehicle.model].filter(Boolean).join(' '); }
+    function panel(title, badge) {
+      const section = el('section', undefined, 'panel');
+      const heading = el('div', undefined, 'panel-head');
+      heading.append(el('h2', title));
+      if (badge) heading.append(el('span', badge, 'tag'));
+      section.append(heading);
+      return section;
+    }
+    function claimRecord(record, policy, draft = false) {
+      const article = el('article', undefined, 'record');
+      const heading = el('div', undefined, 'record-head');
+      heading.append(el('h3', draft ? 'Intake in progress' : record.claim_number), el('span', draft ? 'Not submitted' : 'Submitted', draft ? 'tag draft-tag' : 'tag'));
+      const loss = record.loss || {};
+      const vehicle = policy.vehicles.find(item => item.vehicle_id === loss.vehicle_id);
+      article.append(heading, fields([
+        ...(!draft ? [['Filed', date(record.submitted_at)]] : []),
+        ['Loss type', loss.loss_type ? loss.loss_type[0].toUpperCase() + loss.loss_type.slice(1) : 'Not recorded'],
+        ['Vehicle', vehicle ? vehicleName(vehicle) + ' · ' + vehicle.vehicle_id : loss.vehicle_id || 'Not recorded'],
+        ['Incident time', date(loss.occurred_at)],
+        ['Location', loss.location || 'Not recorded'],
+        ['Incident description', loss.description || 'Not recorded', true],
+        ['Reported by', loss.caller_name], ['Contact phone', loss.caller_phone],
+      ]));
+      return article;
+    }
+    function renderPolicy(policy) {
+      const identity = panel('Policy ' + policy.policy_number, 'Verification details');
+      identity.append(fields([['Policy owner', policy.name], ['Phone', policy.phone]]));
+      const vehicles = panel('Vehicles', String(policy.vehicles.length));
+      const vehicleList = el('ul', undefined, 'vehicles');
+      policy.vehicles.forEach(vehicle => {
+        const item = el('li');
+        item.append(el('h3', vehicleName(vehicle)), el('small', 'Vehicle ID · ' + vehicle.vehicle_id));
+        vehicleList.append(item);
+      });
+      vehicles.append(vehicleList);
+      const claims = panel('Submitted claims', String(policy.claims.length));
+      if (policy.claims.length) policy.claims.forEach(claim => claims.append(claimRecord(claim, policy)));
+      else claims.append(el('p', 'No claims submitted under this policy.', 'empty'));
+      const draft = panel('Open draft', policy.open_draft ? '1 open' : 'None');
+      draft.append(policy.open_draft ? claimRecord(policy.open_draft, policy, true) : el('p', 'No open draft. Saved intake will appear here.', 'empty'));
+      details.replaceChildren(identity, vehicles, claims, draft);
+    }
+    function renderList() {
+      const query = search.value.trim().toLowerCase();
+      const matches = policies.filter(p => p.policy_number.includes(query) || p.name.toLowerCase().includes(query));
+      document.getElementById('count').textContent = `${matches.length} of ${policies.length} policies`;
+      list.replaceChildren();
+      matches.forEach(policy => {
+        const button = el('button', undefined, 'policy');
+        button.type = 'button';
+        button.setAttribute('aria-pressed', String(selected === policy.policy_number));
+        button.append(el('strong', policy.policy_number), el('span', policy.name));
+        button.addEventListener('click', () => loadPolicy(policy.policy_number));
+        list.append(button);
+      });
+      if (!matches.length) list.append(el('p', policies.length ? 'No matching policies.' : 'No policies available.', 'empty'));
+    }
+    async function loadPolicy(number) {
+      const current = ++version;
+      selected = number;
+      renderList();
       details.replaceChildren();
-      if (!select.value) { status.textContent = 'Select a policy.'; return; }
-      status.textContent = 'Loading policy…';
+      details.setAttribute('aria-busy', 'true');
+      message(`Loading policy ${number}…`);
       try {
-        const policy = await getJSON(`/policies/${encodeURIComponent(select.value)}`);
-        if (version !== selectionVersion) return;
-        const sections = [
-          ['Profile', { policy_number: policy.policy_number, name: policy.name, phone: policy.phone }],
-          ['Vehicles', policy.vehicles], ['Drivers', policy.drivers],
-          ['Beneficiaries', policy.beneficiaries], ['Submitted claims', policy.claims],
-          ['Open draft', policy.open_draft], ['Claims against this policy', policy.claims_against]
-        ];
-        sections.forEach(([title, value]) => {
-          const section = element('section');
-          section.append(element('h2', title), render(value));
-          details.append(section);
-        });
-        status.textContent = `Showing ${policy.policy_number} — ${policy.name}.`;
+        const policy = await getJSON('/policies/' + encodeURIComponent(number));
+        if (current !== version) return;
+        renderPolicy(policy);
+        message(`Policy ${number} · Updated ${new Date().toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit', second: '2-digit'})}`);
       } catch (error) {
-        if (version === selectionVersion) status.textContent = `Unable to load policy. ${error.message}`;
+        if (current === version) message(`Unable to load policy ${number}. ${error.message} Use Refresh data to retry.`, true);
+      } finally {
+        if (current === version) details.setAttribute('aria-busy', 'false');
       }
-    });
-
-    (async () => {
+    }
+    async function reload() {
+      const current = ++version;
+      refresh.disabled = true;
+      details.replaceChildren();
+      details.setAttribute('aria-busy', 'true');
+      message('Refreshing policies…');
       try {
-        const policies = await getJSON('/policies');
-        policies.forEach(policy => {
-          const option = element('option', `${policy.policy_number} — ${policy.name}`);
-          option.value = policy.policy_number;
-          select.append(option);
-        });
-        select.disabled = policies.length === 0;
-        status.textContent = policies.length ? 'Select a policy.' : 'No policies available.';
+        const data = await getJSON('/policies');
+        if (current !== version) return;
+        policies = data;
+        selected = policies.some(p => p.policy_number === selected) ? selected : policies[0]?.policy_number || '';
+        renderList();
+        if (selected) await loadPolicy(selected);
+        else { message('No policies available.'); details.setAttribute('aria-busy', 'false'); }
       } catch (error) {
-        status.textContent = `Unable to load policies. ${error.message} Reload to retry.`;
-      }
-    })();
+        if (current === version) {
+          message(`Unable to refresh policies. ${error.message} Use Refresh data to retry.`, true);
+          details.setAttribute('aria-busy', 'false');
+        }
+      } finally { refresh.disabled = false; }
+    }
+    search.addEventListener('input', renderList);
+    refresh.addEventListener('click', reload);
+    reload();
   </script>
 </body>
 </html>
