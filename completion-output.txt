@@ -1,59 +1,59 @@
 
 GET http://127.0.0.1:8000/policies
 HTTP 200
-[{"policy_number": "GEC-0001", "name": "Avery Morgan"}, {"policy_number": "GEC-0002", "name": "Blair Chen"}, {"policy_number": "GEC-0003", "name": "Casey Rivera"}, {"policy_number": "GEC-0004", "name": "Devon Patel"}, {"policy_number": "GEC-0005", "name": "Emery Brooks"}, {"policy_number": "GEC-0006", "name": "Finley Kim"}, {"policy_number": "GEC-0007", "name": "Harper Singh"}, {"policy_number": "GEC-0008", "name": "Jordan Ellis"}, {"policy_number": "GEC-0009", "name": "Kai Bennett"}, {"policy_number": "GEC-0010", "name": "Logan Reed"}, {"policy_number": "GEC-0011", "name": "Morgan Hayes"}, {"policy_number": "GEC-0012", "name": "Parker Diaz"}, {"policy_number": "GEC-0013", "name": "Quinn Foster"}, {"policy_number": "GEC-0014", "name": "Riley Nguyen"}, {"policy_number": "GEC-0015", "name": "Sage Turner"}]
+[{"policy_number": "1001", "name": "Michael Johnson"}, {"policy_number": "1002", "name": "Sarah Miller"}, {"policy_number": "1003", "name": "David Smith"}, {"policy_number": "1004", "name": "Emily Davis"}, {"policy_number": "1005", "name": "James Wilson"}, {"policy_number": "1006", "name": "Jessica Brown"}, {"policy_number": "1007", "name": "Robert Taylor"}, {"policy_number": "1008", "name": "Ashley Moore"}, {"policy_number": "1009", "name": "John Anderson"}, {"policy_number": "1010", "name": "Amanda Clark"}, {"policy_number": "1011", "name": "William Harris"}, {"policy_number": "1012", "name": "Jennifer Lewis"}, {"policy_number": "1013", "name": "Thomas Walker"}, {"policy_number": "1014", "name": "Lisa Hall"}, {"policy_number": "1015", "name": "Daniel Young"}]
 
-GET http://127.0.0.1:8000/policies/GEC-0001
+GET http://127.0.0.1:8000/policies/1001
 HTTP 200
-{"policy_number": "GEC-0001", "name": "Avery Morgan", "phone": "628-268-8753", "vehicles": [{"vehicle_id": "V01-1", "year": 2021, "make": "Toyota", "model": "Camry"}], "drivers": [{"driver_id": "D01-1", "name": "Avery Morgan", "relationship": "policyholder"}], "beneficiaries": [{"name": "Avery Morgan Beneficiary 1", "relationship": "family member"}, {"name": "Avery Morgan Beneficiary 2", "relationship": "family member"}, {"name": "Avery Morgan Beneficiary 3", "relationship": "family member"}], "claims": [{"draft_id": "seed-draft-0001", "policy_number": "GEC-0001", "status": "submitted", "loss": {"occurred_at": "2026-10-20T14:30:00-07:00", "location": "Mock parking lot", "description": "Test vehicle damage while parked.", "vehicle_id": "V01-1", "other_party": {"policy_number": "GEC-0007"}}, "claim_number": "CLM-SEED-0001", "submitted_at": "2026-10-21T12:00:00+00:00"}], "open_draft": null, "claims_against": []}
+{"policy_number": "1001", "name": "Michael Johnson", "phone": "628-555-0101", "vehicles": [{"vehicle_id": "V01-1", "year": 2021, "make": "Toyota", "model": "Camry"}], "drivers": [{"driver_id": "D01-1", "name": "Michael Johnson", "relationship": "policyholder"}], "beneficiaries": [{"name": "Michael Johnson Beneficiary 1", "relationship": "family member"}, {"name": "Michael Johnson Beneficiary 2", "relationship": "family member"}, {"name": "Michael Johnson Beneficiary 3", "relationship": "family member"}], "claims": [{"draft_id": "seed-draft-0001", "policy_number": "1001", "status": "submitted", "loss": {"reporting_intent": "A", "caller_role": "policyholder", "represented_person": null, "caller_name": "Michael Johnson", "caller_phone": "628-555-0101", "occurred_at": "2026-10-20T14:30:00-07:00", "discovered_at": null, "location": "Mock parking lot", "loss_type": "collision", "description": "Another vehicle scraped the parked car.", "vehicle_id": "V01-1", "other_party": {"policy_number": "1007", "name": "Robert Taylor", "phone": "628-555-0107", "insurer": "GEICO", "vehicle_description": "2021 Mazda CX-5"}, "police_report": {"filed": true, "report_number": "MOCK-REPORT-0001", "department": "Mock City Police"}, "witnesses": [{"name": "Alex Sample", "phone": "628-555-0191"}], "evidence_link_sent": false}, "claim_number": "CLM-SEED-0001", "submitted_at": "2026-10-21T12:00:00+00:00"}], "open_draft": null, "claims_against": []}
 
-GET http://127.0.0.1:8000/policies/GEC-0004
+GET http://127.0.0.1:8000/policies/1004
 HTTP 200
-{"policy_number": "GEC-0004", "name": "Devon Patel", "phone": "628-268-8753", "vehicles": [{"vehicle_id": "V04-1", "year": 2021, "make": "Toyota", "model": "Camry"}, {"vehicle_id": "V04-2", "year": 2022, "make": "Honda", "model": "Civic"}], "drivers": [{"driver_id": "D04-1", "name": "Devon Patel", "relationship": "policyholder"}], "beneficiaries": [{"name": "Devon Patel Beneficiary 1", "relationship": "family member"}, {"name": "Devon Patel Beneficiary 2", "relationship": "family member"}], "claims": [], "open_draft": {"draft_id": "seed-draft-0004", "policy_number": "GEC-0004", "status": "draft", "loss": {"occurred_at": "2026-10-20T14:30:00-07:00", "location": "Mock parking lot", "description": "Test vehicle damage while parked.", "vehicle_id": "V04-1", "other_party": null}}, "claims_against": []}
+{"policy_number": "1004", "name": "Emily Davis", "phone": "628-555-0104", "vehicles": [{"vehicle_id": "V04-1", "year": 2021, "make": "Ford", "model": "Escape"}, {"vehicle_id": "V04-2", "year": 2022, "make": "Chevrolet", "model": "Malibu"}], "drivers": [{"driver_id": "D04-1", "name": "Emily Davis", "relationship": "policyholder"}], "beneficiaries": [{"name": "Emily Davis Beneficiary 1", "relationship": "family member"}, {"name": "Emily Davis Beneficiary 2", "relationship": "family member"}], "claims": [], "open_draft": {"draft_id": "seed-draft-0004", "policy_number": "1004", "status": "draft", "loss": {"reporting_intent": "A", "caller_role": "representative", "represented_person": {"name": "Emily Davis", "relationship": "parent"}, "caller_name": "Mark Davis", "caller_phone": "628-555-0190", "occurred_at": "2026-10-20T14:30:00-07:00", "discovered_at": "2026-10-20T17:00:00-07:00", "location": "Mock parking lot", "loss_type": "theft", "description": "Reporting for my parent: their parked car was stolen.", "vehicle_id": "V04-1", "other_party": null, "police_report": {"filed": true, "report_number": "MOCK-REPORT-0004", "department": "Mock City Police"}, "witnesses": [], "evidence_link_sent": false}}, "claims_against": []}
 
-GET http://127.0.0.1:8000/policies/GEC-0007
+GET http://127.0.0.1:8000/policies/1007
 HTTP 200
-{"policy_number": "GEC-0007", "name": "Harper Singh", "phone": "628-268-8753", "vehicles": [{"vehicle_id": "V07-1", "year": 2021, "make": "Toyota", "model": "Camry"}, {"vehicle_id": "V07-2", "year": 2022, "make": "Honda", "model": "Civic"}, {"vehicle_id": "V07-3", "year": 2023, "make": "Honda", "model": "Civic"}], "drivers": [{"driver_id": "D07-1", "name": "Harper Singh", "relationship": "policyholder"}], "beneficiaries": [], "claims": [], "open_draft": null, "claims_against": [{"claim_number": "CLM-SEED-0001", "filed_under_policy": "GEC-0001", "status": "submitted"}]}
+{"policy_number": "1007", "name": "Robert Taylor", "phone": "628-555-0107", "vehicles": [{"vehicle_id": "V07-1", "year": 2021, "make": "Mazda", "model": "CX-5"}, {"vehicle_id": "V07-2", "year": 2022, "make": "Honda", "model": "CR-V"}, {"vehicle_id": "V07-3", "year": 2023, "make": "Ford", "model": "F-150"}], "drivers": [{"driver_id": "D07-1", "name": "Robert Taylor", "relationship": "policyholder"}], "beneficiaries": [], "claims": [], "open_draft": null, "claims_against": [{"claim_number": "CLM-SEED-0001", "filed_under_policy": "1001", "status": "submitted"}]}
 
-GET http://127.0.0.1:8000/policies/GEC-0015
+GET http://127.0.0.1:8000/policies/1015
 HTTP 200
-{"policy_number": "GEC-0015", "name": "Sage Turner", "phone": "628-268-8753", "vehicles": [{"vehicle_id": "V15-1", "year": 2021, "make": "Toyota", "model": "Camry"}], "drivers": [{"driver_id": "D15-1", "name": "Sage Turner", "relationship": "policyholder"}], "beneficiaries": [], "claims": [], "open_draft": null, "claims_against": []}
+{"policy_number": "1015", "name": "Daniel Young", "phone": "628-555-0115", "vehicles": [{"vehicle_id": "V15-1", "year": 2021, "make": "Tesla", "model": "Model 3"}], "drivers": [{"driver_id": "D15-1", "name": "Daniel Young", "relationship": "policyholder"}], "beneficiaries": [], "claims": [], "open_draft": null, "claims_against": []}
 
 GET http://127.0.0.1:8000/policies/UNKNOWN
 HTTP 404
 {"detail": "Policy not found"}
 
-POST http://127.0.0.1:8000/policies/GEC-0015/claims/draft/submit
+POST http://127.0.0.1:8000/policies/1015/claims/draft/submit
 HTTP 400
 {"detail": "No open draft to submit"}
 
-POST http://127.0.0.1:8000/policies/GEC-0015/claims/draft
+POST http://127.0.0.1:8000/policies/1015/claims/draft
 Request: {"description": "Test scrape while parked."}
 HTTP 201
-{"draft_id": "draft-2fa94fd7a25a4fa6b745057afb1efdef", "policy_number": "GEC-0015", "status": "draft", "loss": {"occurred_at": null, "location": null, "description": "Test scrape while parked.", "vehicle_id": null, "other_party": null}}
+{"draft_id": "draft-606e6eb09297420db367f25613e09645", "policy_number": "1015", "status": "draft", "loss": {"reporting_intent": null, "caller_role": null, "represented_person": null, "caller_name": null, "caller_phone": null, "occurred_at": null, "discovered_at": null, "location": null, "description": "Test scrape while parked.", "vehicle_id": null, "loss_type": null, "other_party": null, "police_report": null, "witnesses": [], "evidence_link_sent": false}}
 
-POST http://127.0.0.1:8000/policies/GEC-0015/claims/draft/submit
+POST http://127.0.0.1:8000/policies/1015/claims/draft/submit
 HTTP 400
 {"detail": {"message": "Draft is incomplete", "missing_fields": ["occurred_at", "location", "vehicle_id"]}}
 
-POST http://127.0.0.1:8000/policies/GEC-0015/claims/draft
-Request: {"occurred_at": "2026-10-31T10:00:00-07:00", "location": "Test parking lot", "vehicle_id": "V15-1", "other_party": {"policy_number": "GEC-0014"}}
+POST http://127.0.0.1:8000/policies/1015/claims/draft
+Request: {"occurred_at": "2026-10-31T10:00:00-07:00", "location": "Test parking lot", "vehicle_id": "V15-1", "other_party": {"policy_number": "1014"}}
 HTTP 200
-{"draft_id": "draft-2fa94fd7a25a4fa6b745057afb1efdef", "policy_number": "GEC-0015", "status": "draft", "loss": {"occurred_at": "2026-10-31T10:00:00-07:00", "location": "Test parking lot", "description": "Test scrape while parked.", "vehicle_id": "V15-1", "other_party": {"policy_number": "GEC-0014"}}}
+{"draft_id": "draft-606e6eb09297420db367f25613e09645", "policy_number": "1015", "status": "draft", "loss": {"reporting_intent": null, "caller_role": null, "represented_person": null, "caller_name": null, "caller_phone": null, "occurred_at": "2026-10-31T10:00:00-07:00", "discovered_at": null, "location": "Test parking lot", "description": "Test scrape while parked.", "vehicle_id": "V15-1", "loss_type": null, "other_party": {"policy_number": "1014"}, "police_report": null, "witnesses": [], "evidence_link_sent": false}}
 
-POST http://127.0.0.1:8000/policies/GEC-0015/claims/draft/submit
+POST http://127.0.0.1:8000/policies/1015/claims/draft/submit
 HTTP 201
-{"draft_id": "draft-2fa94fd7a25a4fa6b745057afb1efdef", "policy_number": "GEC-0015", "status": "submitted", "loss": {"occurred_at": "2026-10-31T10:00:00-07:00", "location": "Test parking lot", "description": "Test scrape while parked.", "vehicle_id": "V15-1", "other_party": {"policy_number": "GEC-0014"}}, "claim_number": "CLM-FAF00C0EE6B4496DAFDE390DD75B5C64", "submitted_at": "2026-11-01T20:53:42.201661+00:00"}
+{"draft_id": "draft-606e6eb09297420db367f25613e09645", "policy_number": "1015", "status": "submitted", "loss": {"reporting_intent": null, "caller_role": null, "represented_person": null, "caller_name": null, "caller_phone": null, "occurred_at": "2026-10-31T10:00:00-07:00", "discovered_at": null, "location": "Test parking lot", "description": "Test scrape while parked.", "vehicle_id": "V15-1", "loss_type": null, "other_party": {"policy_number": "1014"}, "police_report": null, "witnesses": [], "evidence_link_sent": false}, "claim_number": "CLM-751931A1", "submission_reference": null, "submitted_at": "2026-11-03T20:39:00.507841+00:00"}
 
-POST http://127.0.0.1:8000/policies/GEC-0015/claims/draft/submit
+POST http://127.0.0.1:8000/policies/1015/claims/draft/submit
 HTTP 400
 {"detail": "No open draft to submit"}
 
-POST http://127.0.0.1:8000/policies/GEC-0015/claims/draft
+POST http://127.0.0.1:8000/policies/1015/claims/draft
 Request: {"name": "Cannot change identity"}
 HTTP 422
 {"detail": [{"type": "extra_forbidden", "loc": ["body", "name"], "msg": "Extra inputs are not permitted", "input": "Cannot change identity"}]}
 
-GET http://127.0.0.1:8000/policies/GEC-0014
+GET http://127.0.0.1:8000/policies/1014
 HTTP 200
-{"policy_number": "GEC-0014", "name": "Riley Nguyen", "phone": "628-268-8753", "vehicles": [{"vehicle_id": "V14-1", "year": 2021, "make": "Toyota", "model": "Camry"}], "drivers": [{"driver_id": "D14-1", "name": "Riley Nguyen", "relationship": "policyholder"}], "beneficiaries": [], "claims": [], "open_draft": null, "claims_against": [{"claim_number": "CLM-FAF00C0EE6B4496DAFDE390DD75B5C64", "filed_under_policy": "GEC-0015", "status": "submitted"}]}
+{"policy_number": "1014", "name": "Lisa Hall", "phone": "628-555-0114", "vehicles": [{"vehicle_id": "V14-1", "year": 2021, "make": "Jeep", "model": "Grand Cherokee"}], "drivers": [{"driver_id": "D14-1", "name": "Lisa Hall", "relationship": "policyholder"}], "beneficiaries": [], "claims": [], "open_draft": null, "claims_against": [{"claim_number": "CLM-751931A1", "filed_under_policy": "1015", "status": "submitted"}]}

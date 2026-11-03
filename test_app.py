@@ -16,7 +16,8 @@ def client():
 def test_seed_distribution():
     policies, drafts, claims = make_seed()
     assert len(policies) == len({p['name'] for p in policies.values()}) == 15
-    assert all(p['phone'] == '628-268-8753' and p['vehicles'] and p['drivers'] for p in policies.values())
+    assert len({p['phone'] for p in policies.values()}) == 15
+    assert all(p['phone'] and p['vehicles'] and p['drivers'] for p in policies.values())
     assert sum(len(p['beneficiaries']) > 1 for p in policies.values()) == 5
     assert sum(len(p['vehicles']) > 1 for p in policies.values()) == 5
     assert sum(len(p['drivers']) > 1 for p in policies.values()) == 5
@@ -117,16 +118,16 @@ def test_expanded_template_round_trip_and_profile_unchanged(client):
     payload = {
         'reporting_intent': 'A', 'caller_role': 'representative',
         'represented_person': {'name': 'Daniel Young', 'relationship': 'parent'},
-        'caller_name': 'Jamie Turner', 'caller_phone': '628-268-8753',
+        'caller_name': 'Jamie Turner', 'caller_phone': '628-555-0190',
         'occurred_at': '2026-10-31T10:00:00-07:00',
         'discovered_at': '2026-10-31T11:00:00-07:00',
         'location': 'Test lot', 'description': 'A vehicle scraped the parked car.',
         'vehicle_id': 'V15-1', 'loss_type': 'collision',
-        'other_party': {'name': 'Lisa Hall', 'phone': '628-268-8753',
+        'other_party': {'name': 'Lisa Hall', 'phone': '628-555-0114',
                         'insurer': 'GEICO', 'policy_number': '1014',
                         'vehicle_description': '2021 Toyota Camry'},
         'police_report': {'filed': True, 'report_number': 'MOCK-123', 'department': 'Mock Police'},
-        'witnesses': [{'name': 'Alex Sample', 'phone': '628-268-8753'}],
+        'witnesses': [{'name': 'Alex Sample', 'phone': '628-555-0191'}],
         'evidence_link_sent': True,
     }
     response = client.post(base + '/claims/draft', json=payload)
@@ -275,7 +276,7 @@ def test_availability(client):
 
 def test_callback_saved_without_policy(client):
     payload = {'callback_time': '2026-11-10T10:00:00-08:00',
-               'callback_phone': '628-268-8753', 'session_id': 'callback-session'}
+               'callback_phone': '628-555-0101', 'session_id': 'callback-session'}
     response = client.post('/callbacks', json=payload)
     assert response.status_code == 201
     record = response.json()
@@ -286,6 +287,6 @@ def test_callback_saved_without_policy(client):
 
 def test_callback_rejects_unknown_field(client):
     response = client.post('/callbacks', json={'callback_time': '2026-11-10T10:00:00-08:00',
-        'callback_phone': '628-268-8753', 'session_id': 'callback-session', 'policy_number': '1001'})
+        'callback_phone': '628-555-0101', 'session_id': 'callback-session', 'policy_number': '1001'})
     assert response.status_code == 422
     assert client.app.state.callbacks == {}

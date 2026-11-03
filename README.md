@@ -1,13 +1,14 @@
 # Mock GEICO Policy and Claims API
 
-A standalone local FastAPI service for voice-agent HTTP integration tests. It has 15 fabricated policyholders, immutable policy profiles, and an in-memory draft-to-claim lifecycle. Every profile deliberately uses the supplied test phone number, **628-268-8753**. The service never sends SMS or places calls. There is no authentication, identity verification, coverage decision, investigation, or payout logic.
+A standalone local FastAPI service for voice-agent HTTP integration tests. It has 15 fabricated policyholders, immutable policy profiles, and an in-memory draft-to-claim lifecycle. Each profile has its own fake phone number in the 628-555-01xx range, such as **628-555-0115** for policy 1015. The service never sends SMS or places calls. There is no authentication, identity verification, coverage decision, investigation, or payout logic.
 
 ## Run
 
 Python 3.10+ and uv:
 
 ```bash
-cd '/Users/pranavsharma/Files/personal projects/GEICO Claims Mock API'
+git clone https://github.com/sharmapranav25/Geico-claims-mockAPI.git
+cd Geico-claims-mockAPI
 uv venv .venv
 uv pip install --python .venv/bin/python -r requirements.txt
 .venv/bin/python -m uvicorn app:app --host 127.0.0.1 --port 8000
@@ -15,7 +16,18 @@ uv pip install --python .venv/bin/python -r requirements.txt
 
 Use **one worker**: all state lives inside that process, resets on restart, and is not shared between processes. Startup seeds a fresh independent store. This project does not use the voice-agent project's environment or dependencies.
 
+Policy page: http://127.0.0.1:8000/ shows each policy's owner, phone number, vehicles, drafts and claims. Refresh it after a call to see what changed.
+
 Interactive API docs: http://127.0.0.1:8000/docs (also `/redoc`); machine-readable schema: `/openapi.json`.
+
+## Simulating failures
+
+The service has no setting to force an error, so stop the server to simulate an outage:
+
+- **API down at the start of a call:** press Ctrl+C in the server terminal before the call begins.
+- **API goes down mid-call:** press Ctrl+C while the call is in progress. To test an uncertain filing, do this during the agent's claim read-back, before approving the claim.
+
+Restart the server afterwards. Restarting clears all drafts and claims.
 
 ## Endpoints
 
@@ -29,7 +41,7 @@ Interactive API docs: http://127.0.0.1:8000/docs (also `/redoc`); machine-readab
 | POST | `/policies/{policy_number}/claims/draft` | 201 when created; 200 when updating the current draft |
 | POST | `/policies/{policy_number}/claims/draft/submit` | Optional `submission_reference` body; 201 for a new claim, 200 with the same claim on reference replay for that policy, even after draft deletion |
 
-The GET endpoints have no request body. Submit accepts an optional `{ "submission_reference": "sub-example" }` body; repeating the reference for the same policy returns the original claim with HTTP 200, even after its draft is deleted. Omitting the body keeps the existing submission behaviour. The upsert body is a loss-report object, **not** a policy profile or a wrapper named `loss`.
+The GET endpoints have no request body. Submit accepts an optional `{ "submission_reference": "sub-example" }` body; repeating the reference for the same policy returns the original claim with HTTP 200, even after its draft is deleted. Omitting the body keeps the existing submission behavior. The upsert body is a loss-report object, **not** a policy profile or a wrapper named `loss`.
 
 ### Read policies
 
@@ -43,7 +55,7 @@ The listing returns an array such as `[{"policy_number":"1001","name":"Michael J
 Example full profile response:
 
 ```json
-{"policy_number":"1015","name":"Daniel Young","phone":"628-268-8753","vehicles":[{"vehicle_id":"V15-1","year":2021,"make":"Toyota","model":"Camry"}],"drivers":[{"driver_id":"D15-1","name":"Daniel Young","relationship":"policyholder"}],"beneficiaries":[],"claims":[],"open_draft":null,"claims_against":[]}
+{"policy_number":"1015","name":"Daniel Young","phone":"628-555-0115","vehicles":[{"vehicle_id":"V15-1","year":2021,"make":"Toyota","model":"Camry"}],"drivers":[{"driver_id":"D15-1","name":"Daniel Young","relationship":"policyholder"}],"beneficiaries":[],"claims":[],"open_draft":null,"claims_against":[]}
 ```
 
 A policy referenced by a submitted claim includes, for example:
@@ -59,13 +71,13 @@ This indicates that a claim names the policy as the other party; it does not det
 ```bash
 curl -sS -X POST http://127.0.0.1:8000/policies/1015/claims/draft \
   -H 'Content-Type: application/json' \
-  -d '{"reporting_intent":"A","caller_role":"representative","represented_person":{"name":"Daniel Young","relationship":"parent"},"caller_name":"Jamie Turner","caller_phone":"628-268-8753","occurred_at":"2026-10-31T10:00:00-07:00","discovered_at":"2026-10-31T11:00:00-07:00","location":"Test parking lot","description":"Test scrape while parked.","vehicle_id":"V15-1","loss_type":"collision","other_party":{"name":"Lisa Hall","phone":"628-268-8753","insurer":"GEICO","policy_number":"1014","vehicle_description":"2021 Toyota Camry"},"police_report":{"filed":true,"report_number":"MOCK-123","department":"Mock Police"},"witnesses":[{"name":"Alex Sample","phone":"628-268-8753"}],"evidence_link_sent":false}'
+  -d '{"reporting_intent":"A","caller_role":"representative","represented_person":{"name":"Daniel Young","relationship":"parent"},"caller_name":"Jamie Turner","caller_phone":"628-555-0190","occurred_at":"2026-10-31T10:00:00-07:00","discovered_at":"2026-10-31T11:00:00-07:00","location":"Test parking lot","description":"Test scrape while parked.","vehicle_id":"V15-1","loss_type":"collision","other_party":{"name":"Lisa Hall","phone":"628-555-0114","insurer":"GEICO","policy_number":"1014","vehicle_description":"2021 Toyota Camry"},"police_report":{"filed":true,"report_number":"MOCK-123","department":"Mock Police"},"witnesses":[{"name":"Alex Sample","phone":"628-555-0191"}],"evidence_link_sent":false}'
 ```
 
 Example 201 response (identifiers vary):
 
 ```json
-{"draft_id":"draft-example","policy_number":"1015","status":"draft","loss":{"reporting_intent":"A","caller_role":"representative","represented_person":{"name":"Daniel Young","relationship":"parent"},"caller_name":"Jamie Turner","caller_phone":"628-268-8753","occurred_at":"2026-10-31T10:00:00-07:00","discovered_at":"2026-10-31T11:00:00-07:00","location":"Test parking lot","description":"Test scrape while parked.","vehicle_id":"V15-1","loss_type":"collision","other_party":{"name":"Lisa Hall","phone":"628-268-8753","insurer":"GEICO","policy_number":"1014","vehicle_description":"2021 Toyota Camry"},"police_report":{"filed":true,"report_number":"MOCK-123","department":"Mock Police"},"witnesses":[{"name":"Alex Sample","phone":"628-268-8753"}],"evidence_link_sent":false}}
+{"draft_id":"draft-example","policy_number":"1015","status":"draft","loss":{"reporting_intent":"A","caller_role":"representative","represented_person":{"name":"Daniel Young","relationship":"parent"},"caller_name":"Jamie Turner","caller_phone":"628-555-0190","occurred_at":"2026-10-31T10:00:00-07:00","discovered_at":"2026-10-31T11:00:00-07:00","location":"Test parking lot","description":"Test scrape while parked.","vehicle_id":"V15-1","loss_type":"collision","other_party":{"name":"Lisa Hall","phone":"628-555-0114","insurer":"GEICO","policy_number":"1014","vehicle_description":"2021 Toyota Camry"},"police_report":{"filed":true,"report_number":"MOCK-123","department":"Mock Police"},"witnesses":[{"name":"Alex Sample","phone":"628-555-0191"}],"evidence_link_sent":false}}
 ```
 
 All request fields are optional on each update. `{}` creates an empty draft or leaves an existing draft unchanged. Omitted fields retain their current values. Explicit `null` clears nullable fields; clear `witnesses` with `[]` and reset `evidence_link_sent` with `false` (neither accepts null). Nested objects and lists, when supplied, replace the entire previous object/list rather than merging individual sub-fields. These partial-update semantics retain `exclude_unset`.
@@ -103,7 +115,7 @@ curl -sS -X POST http://127.0.0.1:8000/policies/1015/claims/draft/submit
 Example 201 response (identifiers and submission timestamp vary):
 
 ```json
-{"draft_id":"draft-example","policy_number":"1015","status":"submitted","loss":{"reporting_intent":"A","caller_role":"representative","represented_person":{"name":"Daniel Young","relationship":"parent"},"caller_name":"Jamie Turner","caller_phone":"628-268-8753","occurred_at":"2026-10-31T10:00:00-07:00","discovered_at":"2026-10-31T11:00:00-07:00","location":"Test parking lot","description":"Test scrape while parked.","vehicle_id":"V15-1","loss_type":"collision","other_party":{"name":"Lisa Hall","phone":"628-268-8753","insurer":"GEICO","policy_number":"1014","vehicle_description":"2021 Toyota Camry"},"police_report":{"filed":true,"report_number":"MOCK-123","department":"Mock Police"},"witnesses":[{"name":"Alex Sample","phone":"628-268-8753"}],"evidence_link_sent":false},"claim_number":"CLM-EXAMPLE","submitted_at":"2026-11-01T20:00:00+00:00"}
+{"draft_id":"draft-example","policy_number":"1015","status":"submitted","loss":{"reporting_intent":"A","caller_role":"representative","represented_person":{"name":"Daniel Young","relationship":"parent"},"caller_name":"Jamie Turner","caller_phone":"628-555-0190","occurred_at":"2026-10-31T10:00:00-07:00","discovered_at":"2026-10-31T11:00:00-07:00","location":"Test parking lot","description":"Test scrape while parked.","vehicle_id":"V15-1","loss_type":"collision","other_party":{"name":"Lisa Hall","phone":"628-555-0114","insurer":"GEICO","policy_number":"1014","vehicle_description":"2021 Toyota Camry"},"police_report":{"filed":true,"report_number":"MOCK-123","department":"Mock Police"},"witnesses":[{"name":"Alex Sample","phone":"628-555-0191"}],"evidence_link_sent":false},"claim_number":"CLM-EXAMPLE","submitted_at":"2026-11-01T20:00:00+00:00"}
 ```
 
 Submission requires `occurred_at`, `location`, `description`, and `vehicle_id`. It atomically copies the draft to a locked submitted claim and removes the open draft. The generated claim number is returned only after that succeeds. Concurrent submissions of one draft create one claim; the other request receives 400. There is no durable idempotency across restarts.
@@ -136,7 +148,7 @@ Invalid requests leave existing data unchanged. FastAPI validates request bodies
 | Named as other party in a submitted claim | 1007 (filed under 1001), 1008 (filed under 1002) |
 | No claim activity | 1009, 1010, 1011, 1012, 1013, 1014, 1015 |
 
-The reference-data groups intentionally overlap at 0004/0005 and 0008. Their union covers 12 of 15 policies, leaving three simple baseline profiles. Each profile always has its policyholder listed as a driver and at least one vehicle. Outside the beneficiary group, the beneficiary list is empty. These mock beneficiary labels do not establish authority or imply real product terms.
+The reference-data groups intentionally overlap at 1004/1005 and 1008. Their union covers 12 of 15 policies, leaving three simple baseline profiles. Each profile always has its policyholder listed as a driver and at least one vehicle. Outside the beneficiary group, the beneficiary list is empty. These mock beneficiary labels do not establish authority or imply real product terms.
 
 The six seeded report bodies exercise the expanded template:
 
@@ -165,6 +177,6 @@ With a freshly started server in another terminal:
 cat completion-output.txt
 ```
 
-`smoke_check.py` uses Python's standard-library HTTP client. It prints exact methods, URLs, request bodies, status codes, and response bodies and asserts expected status codes. `completion-output.txt` is the historical initial run (before the expanded claim template), including all 15 policy selections, all four seeded activity states, unknown-policy 404, create/update/submit, missing/incomplete draft failures, read-only-field rejection, and the new other-party linkage.
+`smoke_check.py` uses Python's standard-library HTTP client. It prints exact methods, URLs, request bodies, status codes, and response bodies and asserts expected status codes. `completion-output.txt` is a captured run against a freshly started server, including all 15 policy selections, all four seeded activity states, unknown-policy 404, create/update/submit, missing/incomplete draft failures, read-only-field rejection, and the new other-party linkage.
 
 The demonstration changes 1015 and 1014; restart the server before rerunning it to restore the documented seed states. Unit tests use isolated stores and cover immutability, partial updates, null clearing, bad references, and concurrent submission. The tested dependency combination emits a Starlette warning about future TestClient HTTP transport changes; the suite covers the expanded template in addition to the original checks.
