@@ -7,6 +7,15 @@ NAMES = [
 ]
 
 
+VEHICLE_MODELS = [
+    ("Toyota", "Camry"), ("Honda", "Accord"), ("Subaru", "Outback"),
+    ("Ford", "Escape"), ("Chevrolet", "Malibu"), ("Hyundai", "Sonata"),
+    ("Mazda", "CX-5"), ("Honda", "CR-V"), ("Ford", "F-150"),
+    ("Kia", "Telluride"), ("Nissan", "Altima"), ("Toyota", "Sienna"),
+    ("Volkswagen", "Tiguan"), ("Jeep", "Grand Cherokee"), ("Tesla", "Model 3"),
+]
+
+
 def make_seed():
     policies, drafts, claims = {}, {}, {}
     # Groups 1–5, 4–8, and 8–12 overlap while covering 12/15 policies.
@@ -15,8 +24,8 @@ def make_seed():
         number = str(1000 + i)
         vehicles = [
             {"vehicle_id": f"V{i:02d}-{j}", "year": 2020 + j,
-             "make": "Toyota" if j == 1 else "Honda",
-             "model": "Camry" if j == 1 else "Civic"}
+             "make": VEHICLE_MODELS[(i + j - 2) % len(VEHICLE_MODELS)][0],
+             "model": VEHICLE_MODELS[(i + j - 2) % len(VEHICLE_MODELS)][1]}
             for j in range(1, (2 + i % 2 if 4 <= i <= 8 else 1) + 1)
         ]
         drivers = [{"driver_id": f"D{i:02d}-1", "name": name, "relationship": "policyholder"}]
@@ -60,7 +69,7 @@ def make_seed():
                     "other_party": {
                         "policy_number": str(1000 + i + 6), "name": NAMES[i + 5],
                         "phone": "628-268-8753", "insurer": "GEICO",
-                        "vehicle_description": "2021 Toyota Camry",
+                        "vehicle_description": "2021 " + " ".join(VEHICLE_MODELS[i + 5]),
                     } if i <= 2 else None,
                     "police_report": {
                         "filed": True, "report_number": f"MOCK-REPORT-{i:04d}",
